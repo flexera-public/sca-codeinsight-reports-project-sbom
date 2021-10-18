@@ -167,6 +167,7 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
     reportData["inventoryData"] = inventoryData
     reportData["projectList"] =projectList
     reportData["reportOptions"] =reportOptions
+    reportData["projectInventoryCount"] = projectInventoryCount
 
     return reportData
 

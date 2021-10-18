@@ -46,6 +46,7 @@ def generate_html_report(reportData):
     inventoryData = reportData["inventoryData"]
     projectList = reportData["projectList"]
     reportOptions = reportData["reportOptions"]
+    projectInventoryCount = reportData["projectInventoryCount"]
 
    
     scriptDirectory = os.path.dirname(os.path.realpath(__file__))
@@ -137,6 +138,45 @@ def generate_html_report(reportData):
     # Body of Report
     #---------------------------------------------------------------------------------------------------
     html_ptr.write("<!-- BEGIN BODY -->\n")  
+
+
+    # If there is some sort of hierarchy then show specific project summaries
+    if len(projectList) > 1:
+        
+        # How much space to we need to give each canvas
+        # based on the amount of projects in the hierarchy
+        canvasHeight = len(projectList) * 20   
+
+        # We need a minimum size to cover font as well
+        if canvasHeight < 180:
+            canvasHeight = 180
+        # The entire column needs to hold the three canvas items
+        columnHeight = canvasHeight *3
+
+        html_ptr.write("<hr class='small'>\n")
+
+#######################################################################
+        #  Create table to hold the project summary charts.
+        #  js script itself is added later
+
+        html_ptr.write("<table id='projectSummary' class='table' style='width:90%'>\n")
+        html_ptr.write("    <thead>\n")
+        html_ptr.write("        <tr>\n")
+        html_ptr.write("            <th colspan='8' class='text-center'><h4>Project Hierarchy</h4></th>\n") 
+        html_ptr.write("        </tr>\n") 
+        html_ptr.write("    </thead>\n")
+        html_ptr.write("</table>\n")
+
+        html_ptr.write("<div class='container'>\n")
+        html_ptr.write("    <div class='row'>\n")
+
+        html_ptr.write("        <div class='col-sm'>\n")
+        html_ptr.write("            <div id='project_hierarchy'></div>\n")
+        html_ptr.write("        </div>\n")
+        html_ptr.write("    </div>\n")
+        html_ptr.write("</div>\n")
+
+        html_ptr.write("<hr class='small'>")
 
  
     html_ptr.write("<table id='inventoryData' class='table table-hover table-sm row-border' style='width:90%'>\n")
@@ -237,6 +277,7 @@ def generate_html_report(reportData):
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>  
     <script src="https://cdn.datatables.net/1.10.21/js/dataTables.bootstrap4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.3.10/jstree.min.js"></script>
     ''')
 
     html_ptr.write("<script>\n")
@@ -244,6 +285,12 @@ def generate_html_report(reportData):
     # Logic for datatable for inventory details
     add_inventory_datatable(html_ptr)
     
+
+    if len(projectList) > 1:
+        # Add the js for the project summary stacked bar charts
+        generate_project_hierarchy_tree(html_ptr, projectList, projectInventoryCount)
+
+
     html_ptr.write("</script>\n")
 
     html_ptr.write("</body>\n") 
@@ -281,3 +328,44 @@ def add_inventory_datatable(html_ptr):
                 });
             });
         ''')    
+
+#----------------------------------------------------------------------------------------#
+def generate_project_hierarchy_tree(html_ptr, projectHierarchy, projectInventoryCount):
+    logger.info("Entering generate_project_hierarchy_tree")
+
+    html_ptr.write('''var hierarchy = [\n''')
+
+    for project in projectHierarchy:
+
+        inventoryCount = projectInventoryCount[project["projectName"]]
+
+        html_ptr.write('''{
+            'id': '%s', 
+            'parent': '%s', 
+            'text': '%s',
+            'a_attr': {
+                'href': '%s'
+            }
+        },\n'''  %(project["projectID"], project["parent"], project["projectName"] + " (" + str(inventoryCount) + " items)" , project["projectLink"]))
+
+    html_ptr.write('''\n]''')
+
+    html_ptr.write('''
+
+        $('#project_hierarchy').jstree({ 'core' : {
+            'data' : hierarchy
+        } });
+
+        $('#project_hierarchy').on('ready.jstree', function() {
+            $("#project_hierarchy").jstree("open_all");               
+
+        $("#project_hierarchy").on("click", ".jstree-anchor", function(evt)
+        {
+            var link = $(evt.target).attr("href");
+            window.open(link, '_blank');
+        });
+
+
+        });
+
+    ''' )
