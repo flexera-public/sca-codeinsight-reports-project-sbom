@@ -143,6 +143,8 @@ def verifyOptions(reportOptions):
     falseOptions = ["false", "f", "no", "n"]
 
     includeChildProjects = reportOptions["includeChildProjects"]
+    includeVulnerabilities = reportOptions["includeVulnerabilities"]
+    cvssVersion = reportOptions["cvssVersion"]
 
 
     if includeChildProjects.lower() in trueOptions:
@@ -151,6 +153,20 @@ def verifyOptions(reportOptions):
         reportOptions["includeChildProjects"] = False
     else:
         reportOptions["errorMsg"].append("Invalid option for including child projects: <b>%s</b>.  Valid options are <b>True/False</b>" %includeChildProjects)
+
+    if includeVulnerabilities.lower() in trueOptions:
+        reportOptions["includeVulnerabilities"] = True
+    elif includeVulnerabilities.lower() in falseOptions:
+        reportOptions["includeVulnerabilities"] = False
+    else:
+        reportOptions["errorMsg"].append("Invalid option for including vulnerability data: <b>%s</b>.  Valid options are <b>True/False</b>" %includeVulnerabilities)
+
+    if cvssVersion.startswith("2"):
+        reportOptions["cvssVersion"] = "2.0"
+    elif cvssVersion.startswith("3"):
+        reportOptions["cvssVersion"]  = "3.x"
+    else:
+        reportOptions["errorMsg"].append("Invalid option for CVSS Version: <b>%s</b>.  Valid options are <b>2.0/3.x</b>" %cvssVersion)
 
     if not reportOptions["errorMsg"]:
         reportOptions.pop('errorMsg', None)

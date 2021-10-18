@@ -45,6 +45,7 @@ def generate_html_report(reportData):
     fileNameTimeStamp = reportData["fileNameTimeStamp"] 
     inventoryData = reportData["inventoryData"]
     projectList = reportData["projectList"]
+    reportOptions = reportData["reportOptions"]
 
    
     scriptDirectory = os.path.dirname(os.path.realpath(__file__))
@@ -152,6 +153,9 @@ def generate_html_report(reportData):
     html_ptr.write("            <th style='width: 30%' class='text-center'>COMPONENT</th>\n")
     html_ptr.write("            <th style='width: 15%' class='text-center'>VERSION</th>\n")
     html_ptr.write("            <th style='width: 25%' class='text-center'>LICENSE</th>\n") 
+    
+    if reportOptions["includeVulnerabilities"]:
+        html_ptr.write("            <th style='width: 25%' class='text-center'>VULNERABILITES</th>\n") 
 
     html_ptr.write("        </tr>\n")
     html_ptr.write("    </thead>\n")  
@@ -169,7 +173,7 @@ def generate_html_report(reportData):
         componentVersionName = inventoryData[inventoryID]["componentVersionName"]
         selectedLicenseName = inventoryData[inventoryID]["selectedLicenseName"]
         selectedLicenseUrl = inventoryData[inventoryID]["selectedLicenseUrl"]
-
+        hasVulnerabilities = inventoryData[inventoryID]["hasVulnerabilities"]
 
         logger.debug("Reporting for inventory item %s" %inventoryID)
 
@@ -194,6 +198,12 @@ def generate_html_report(reportData):
             html_ptr.write("            <td class='text-left'><a href='%s' target='_blank'>%s</a></td>\n" %(selectedLicenseUrl, selectedLicenseName))
 
         html_ptr.write("            </td>\n")
+
+        if reportOptions["includeVulnerabilities"]:
+            if hasVulnerabilities:
+                html_ptr.write("            <td class='text-left'>True</td>\n")
+            else:
+                html_ptr.write("            <td class='text-left'>&nbsp</td>\n")
 
         html_ptr.write("        </tr>\n") 
     html_ptr.write("    </tbody>\n")

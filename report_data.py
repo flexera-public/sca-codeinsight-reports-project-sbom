@@ -20,6 +20,8 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
 
     # Parse report options
     includeChildProjects = reportOptions["includeChildProjects"]  # True/False
+    includeVulnerabilities = reportOptions["includeVulnerabilities"]  # True/False
+    cvssVersion = reportOptions["cvssVersion"]  # 2.0/3.x
 
     projectList = [] # List to hold parent/child details for report
     inventoryData = {}  # Create a dictionary containing the inventory data using inventoryID as keys
@@ -53,8 +55,16 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
         projectName = project["projectName"]
         projectLink = project["projectLink"]
 
-        projectInventorySummary = CodeInsight_RESTAPIs.project.get_inventory_summary.get_project_inventory_without_vulns_summary(baseURL, projectID, authToken)
+        # Include vulnerability data?
+        if includeVulnerabilities:
+            if cvssVersion == "3.x":
+                projectInventorySummary = CodeInsight_RESTAPIs.project.get_inventory_summary.get_project_inventory_with_v3_summary(baseURL, projectID, authToken)
+            else:
+                projectInventorySummary = CodeInsight_RESTAPIs.project.get_inventory_summary.get_project_inventory_with_v2_summary(baseURL, projectID, authToken)
+        else:
+            projectInventorySummary = CodeInsight_RESTAPIs.project.get_inventory_summary.get_project_inventory_without_vulns_summary(baseURL, projectID, authToken)
 
+        
         if not projectInventorySummary:
             logger.warning("    Project contains no inventory items")
             print("Project contains no inventory items.")
@@ -115,6 +125,23 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
             componentUrl = inventoryItem["url"]
             inventoryLink = baseURL + "/codeinsight/FNCI#myprojectdetails/?id=" + str(projectID) + "&tab=projectInventory&pinv=" + str(inventoryID)
 
+            # Determine if there are any vulnerabilities
+            try:
+                if cvssVersion == "3.x":
+                    vulnerabilities = inventoryItem["vulnerabilitySummary"][0]["CvssV3"]
+                else:
+                    vulnerabilities = inventoryItem["vulnerabilitySummary"][0]["CvssV2"]
+                
+                if vulnerabilities:
+                    hasVulnerabilities=True
+                else:
+                    hasVulnerabilities=False
+
+            except:
+                logger.debug("No vulnerabilies for %s - %s" %(componentName, componentVersionName))
+                hasVulnerabilities=False
+
+
             # Store the data for the inventory item for reporting
             inventoryData[inventoryID] = {
                 "projectName" : projectName,
@@ -125,12 +152,11 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
                 "componentUrl" : componentUrl,
                 "selectedLicenseUrl" : selectedLicenseUrl,
                 "inventoryLink" : inventoryLink,
-                "projectLink" : projectLink
+                "projectLink" : projectLink,
+                "hasVulnerabilities" : hasVulnerabilities
             }
 
             projectData[projectName]["projectLink"] = projectLink
-
-
 
     # Build up the data to return for the
     reportData = {}
@@ -140,6 +166,7 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
     reportData["projectID"] = projectHierarchy["id"]
     reportData["inventoryData"] = inventoryData
     reportData["projectList"] =projectList
+    reportData["reportOptions"] =reportOptions
 
     return reportData
 
