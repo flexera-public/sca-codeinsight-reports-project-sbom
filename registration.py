@@ -57,8 +57,8 @@ reportOptions.append(reportOption)
 
 reportOption = {}
 reportOption["name"] = "includeVulnerabilities"
-reportOption["label"] = "Include vulnerability presense? (True/False)"
-reportOption["description"] = "Should the report include the presense of vulnerabilities in a component? <b>(True/False)</b>"
+reportOption["label"] = "Include vulnerability presence? (True/False)"
+reportOption["description"] = "Should the report include the presence of vulnerabilities in a component? <b>(True/False)</b>"
 reportOption["type"] = "string"
 reportOption["defaultValue"] = "True"
 reportOption["required"] = "true"
