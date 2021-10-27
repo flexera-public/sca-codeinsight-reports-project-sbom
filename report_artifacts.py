@@ -48,17 +48,11 @@ def generate_html_report(reportData):
     reportOptions = reportData["reportOptions"]
     projectInventoryCount = reportData["projectInventoryCount"]
 
-   
+ 
     scriptDirectory = os.path.dirname(os.path.realpath(__file__))
     cssFile =  os.path.join(scriptDirectory, "html-assets/css/revenera_common.css")
     logoImageFile =  os.path.join(scriptDirectory, "html-assets/images/logo_reversed.svg")
     iconFile =  os.path.join(scriptDirectory, "html-assets/images/favicon-revenera.ico")
-
-
-    logger.debug("cssFile: %s" %cssFile)
-    logger.debug("imageFile: %s" %logoImageFile)
-    logger.debug("iconFile: %s" %iconFile)
-
 
     #########################################################
     #  Encode the image files
@@ -73,7 +67,7 @@ def generate_html_report(reportData):
     else:
         htmlFile = projectNameForFile + "-with-children-" + str(projectID) + "-" + reportName.replace(" ", "_") + "-" + fileNameTimeStamp + ".html" 
 
-    logger.debug("htmlFile: %s" %htmlFile)
+    #logger.debug("htmlFile: %s" %htmlFile)
 
     #---------------------------------------------------------------------------------------------------
     # Create a simple HTML file to display
@@ -104,7 +98,6 @@ def generate_html_report(reportData):
     # Add the contents of the css file to the head block
     try:
         f_ptr = open(cssFile)
-        logger.debug("Adding css file details")
         for line in f_ptr:
             html_ptr.write("            %s" %line)
         f_ptr.close()
@@ -206,7 +199,10 @@ def generate_html_report(reportData):
     # Cycle through the inventory to create the 
     # table with the results
     for inventoryID in sorted(inventoryData):
+
+        logger.debug("        Reporting for inventory item %s" %inventoryID)
         projectName = inventoryData[inventoryID]["projectName"]
+        inventoryItemName = inventoryData[inventoryID]["inventoryItemName"]
         projectLink = inventoryData[inventoryID]["projectLink"]
         componentName = inventoryData[inventoryID]["componentName"]
         componentUrl = inventoryData[inventoryID]["componentUrl"]
@@ -215,7 +211,7 @@ def generate_html_report(reportData):
         selectedLicenseUrl = inventoryData[inventoryID]["selectedLicenseUrl"]
         hasVulnerabilities = inventoryData[inventoryID]["hasVulnerabilities"]
 
-        logger.debug("Reporting for inventory item %s" %inventoryID)
+        logger.debug("            Project Name:  %s   Inventory Name %s" %(projectName, inventoryItemName))
 
 
         html_ptr.write("        <tr> \n")
@@ -308,7 +304,6 @@ def encodeImage(imageFile):
     # Create base64 variable for branding image
     try:
         with open(imageFile,"rb") as image:
-            logger.debug("Encoding image: %s" %imageFile)
             encodedImage = base64.b64encode(image.read())
             return encodedImage
     except:

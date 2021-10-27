@@ -13,6 +13,8 @@ import CodeInsight_RESTAPIs.project.get_inventory_summary
 import CodeInsight_RESTAPIs.license.license_lookup
 
 logger = logging.getLogger(__name__)
+logging.getLogger("urllib3").setLevel(logging.WARNING)  # Disable logging for requests module
+
 
 #-------------------------------------------------------------------#
 def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOptions):
@@ -82,7 +84,7 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
             inventoryItemName = inventoryItem["name"]
 
             logger.debug("Processing inventory items %s of %s" %(currentItem, len(projectInventorySummary)))
-            logger.debug("    %s - %s" %(inventoryID, inventoryItemName))
+            logger.debug("    Project:  %s   Inventory Name: %s  Inventory ID: %s" %(projectName, inventoryItemName, inventoryID))
             
             componentName = inventoryItem["componentName"]
             componentID = inventoryItem["componentId"]
@@ -96,7 +98,7 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
                 selectedLicenseUrl = licenseDetails[selectedLicenseID]["selectedLicenseUrl"]
             else:
                 if selectedLicenseID != "N/A":  
-                    logger.debug("Fetching license details for %s with ID %s" %(selectedLicenseName, selectedLicenseID ))
+                    logger.debug("        Fetching license details for %s with ID %s" %(selectedLicenseName, selectedLicenseID ))
                     licenseInformation = CodeInsight_RESTAPIs.license.license_lookup.get_license_details(baseURL, selectedLicenseID, authToken)
                     licenseURL = licenseInformation["url"]
                     spdxIdentifier = licenseInformation["spdxIdentifier"]
@@ -138,7 +140,7 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
                     hasVulnerabilities=False
 
             except:
-                logger.debug("No vulnerabilies for %s - %s" %(componentName, componentVersionName))
+                logger.info("        No vulnerabilies for %s - %s" %(componentName, componentVersionName))
                 hasVulnerabilities=False
 
 
@@ -174,7 +176,8 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
 
 #----------------------------------------------#
 def create_project_hierarchy(project, parentID, projectList, baseURL):
-    logger.debug("Entering create_project_hierarchy")
+    logger.debug("Entering create_project_hierarchy.")
+    logger.debug("    Project Details: %s" %project)
 
     # Are there more child projects for this project?
     if len(project["childProject"]):
