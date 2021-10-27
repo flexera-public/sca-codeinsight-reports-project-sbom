@@ -9,6 +9,7 @@ File : report_artifacts_xlsx.py
 '''
 
 import logging
+from datetime import datetime
 import xlsxwriter
 
 import _version
@@ -91,7 +92,7 @@ def generate_xlsx_report(reportData):
     reportOptions = reportData["reportOptions"]
     projectHierarchy = reportData["projectHierarchy"]
 
-
+    # Are there child projects involved?  If so have the file name reflect this fact
     if len(projectList)==1:
         xlsxFile = projectNameForFile + "-" + str(projectID) + "-" + reportName.replace(" ", "_") + "-" + fileNameTimeStamp + ".xlsx"
     else:
@@ -118,7 +119,8 @@ def generate_xlsx_report(reportData):
 
     ############################################################
     # Fill out the SBOM details worksheet
-    detailsWorksheet = workbook.add_worksheet('SBOM') 
+    detailsWorksheet = workbook.add_worksheet('SBOM')
+    detailsWorksheet.hide_gridlines(2) 
 
     column=0
     row=0
@@ -143,10 +145,14 @@ def generate_xlsx_report(reportData):
     tableHeaders.append("LICENSE")
     column+=1
     
-    detailsWorksheet.set_column(column, column, 25) 
-    tableHeaders.append("VULNERABILITIES")
-    column+=1
-    
+    if reportOptions["includeVulnerabilities"]:
+        detailsWorksheet.set_column(column, column, 25) 
+        tableHeaders.append("VULNERABILITIES")
+        column+=1
+
+    detailsWorksheet.write(0, column+1, "Report Generated: %s" %(datetime.now().strftime("%B %d, %Y at %H:%M:%S")))
+    detailsWorksheet.write(1, column+1, "Report Version: %s" %_version.__version__)
+
     # Write out the column headers
     detailsWorksheet.write_row(row, 0, tableHeaders, tableHeaderFormat)
 
@@ -166,7 +172,7 @@ def generate_xlsx_report(reportData):
 
         logger.debug("            Project Name:  %s --> Inventory Item %s" %(projectName, inventoryItemName))
 
-        # Now write each cell
+        # Now write each row of inventory data
         column=0
         
         if len(projectList) > 1:
