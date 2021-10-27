@@ -99,8 +99,12 @@ def main():
     else:
         reportData = report_data.gather_data_for_report(baseURL, projectID, authToken, reportName, reportOptions)
         print("    Report data has been collected")
-        reportData["fileNameTimeStamp"] = fileNameTimeStamp
         projectName = reportData["projectName"]
+        projectNameForFile = re.sub(r"[^a-zA-Z0-9]+", '-', projectName )  # Remove special characters from project name for artifacts
+        
+        reportData["projectNameForFile"] = projectNameForFile
+        reportData["fileNameTimeStamp"] = fileNameTimeStamp
+        
         numProjects = len(reportData["projectList"])
 
         if "errorMsg" in reportOptions.keys():
@@ -111,7 +115,7 @@ def main():
             print("    Report artifacts have been created")
 
     print("    Create report archive for upload")
-    uploadZipfile = create_report_zipfile(reports, reportName, projectName, projectID, numProjects, fileNameTimeStamp)
+    uploadZipfile = create_report_zipfile(reports, reportName, projectNameForFile, projectID, numProjects, fileNameTimeStamp)
     print("    Upload zip file creation completed")
 
 	#########################################################
@@ -174,10 +178,9 @@ def verifyOptions(reportOptions):
     return reportOptions
 
 #---------------------------------------------------------------------#
-def create_report_zipfile(reportOutputs, reportName, projectName, projectID, numProjects, fileNameTimeStamp):
+def create_report_zipfile(reportOutputs, reportName, projectNameForFile, projectID, numProjects, fileNameTimeStamp):
 	logger.info("Entering create_report_zipfile")
 
-	projectNameForFile = re.sub(r"[^a-zA-Z0-9]+", '-', projectName )
 
 	# create a ZipFile object
 	if numProjects <= 1 :
