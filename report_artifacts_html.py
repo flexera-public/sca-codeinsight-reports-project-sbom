@@ -229,7 +229,6 @@ def generate_html_report(reportData, reportNameBase):
     #---------------------------------------------------------------------------------------------------
     html_ptr.write("<!-- BEGIN FOOTER -->\n")
     html_ptr.write("<div class='report-footer'>\n")
-    html_ptr.write("  <div style='float:left'>&copy; %s Flexera</div>\n" %fileNameTimeStamp[0:4])
     html_ptr.write("  <div style='float:right'>Generated on %s</div>\n" %datetime.strptime(fileNameTimeStamp, "%Y%m%d-%H%M%S").strftime("%B %d, %Y at %H:%M:%S"))
     html_ptr.write("<br>\n")
     html_ptr.write("  <div style='float:right'>Report Version: %s</div>\n" %_version.__version__)
