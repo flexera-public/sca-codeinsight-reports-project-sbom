@@ -18,23 +18,17 @@ import report_branding.xlsx.xlsx_formatting
 logger = logging.getLogger(__name__)
 
 #------------------------------------------------------------------#
-def generate_xlsx_report(reportData):
+def generate_xlsx_report(reportData, reportNameBase):
     logger.info("    Entering generate_xlsx_report")
-    reportName = reportData["reportName"]
+
     projectName = reportData["projectName"]
-    projectNameForFile  = reportData["projectNameForFile"] 
-    projectID = reportData["projectID"] 
     fileNameTimeStamp = reportData["fileNameTimeStamp"] 
     inventoryData = reportData["inventoryData"]
     projectList = reportData["projectList"]
     reportOptions = reportData["reportOptions"]
     projectHierarchy = reportData["projectHierarchy"]
 
-    # Are there child projects involved?  If so have the file name reflect this fact
-    if len(projectList)==1:
-        xlsxFile = projectNameForFile + "-" + str(projectID) + "-" + reportName.replace(" ", "_") + "-" + fileNameTimeStamp + ".xlsx"
-    else:
-        xlsxFile = projectNameForFile + "-with-children-" + str(projectID) + "-" + reportName.replace(" ", "_") + "-" + fileNameTimeStamp + ".xlsx" 
+    xlsxFile = reportNameBase + ".xlsx"
 
     # Create the workbook/worksheet for storying the data
     workbook = xlsxwriter.Workbook(xlsxFile)
@@ -88,7 +82,7 @@ def generate_xlsx_report(reportData):
         tableHeaders.append("VULNERABILITIES")
         column+=1
 
-    detailsWorksheet.write(0, column+1, "Report Generated: %s" %(datetime.now().strftime("%B %d, %Y at %H:%M:%S")))
+    detailsWorksheet.write(0, column+1, "Report Generated: %s" %datetime.strptime(fileNameTimeStamp, "%Y%m%d-%H%M%S").strftime("%B %d, %Y at %H:%M:%S"))
     detailsWorksheet.write(1, column+1, "Report Version: %s" %_version.__version__)
 
     # Write out the column headers

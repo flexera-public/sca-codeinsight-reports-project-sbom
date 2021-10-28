@@ -18,13 +18,11 @@ logger = logging.getLogger(__name__)
 
 
 #------------------------------------------------------------------#
-def generate_html_report(reportData):
+def generate_html_report(reportData, reportNameBase):
     logger.info("    Entering generate_html_report")
 
     reportName = reportData["reportName"]
     projectName = reportData["projectName"]
-    projectNameForFile  = reportData["projectNameForFile"]
-    projectID = reportData["projectID"] 
     fileNameTimeStamp = reportData["fileNameTimeStamp"] 
     inventoryData = reportData["inventoryData"]
     projectList = reportData["projectList"]
@@ -41,12 +39,7 @@ def generate_html_report(reportData):
     encodedLogoImage = encodeImage(logoImageFile)
     encodedfaviconImage = encodeImage(iconFile)
 
-    if len(projectList)==1:
-        htmlFile = projectNameForFile + "-" + str(projectID) + "-" + reportName.replace(" ", "_") + "-" + fileNameTimeStamp + ".html"
-    else:
-        htmlFile = projectNameForFile + "-with-children-" + str(projectID) + "-" + reportName.replace(" ", "_") + "-" + fileNameTimeStamp + ".html" 
-
-    #logger.debug("htmlFile: %s" %htmlFile)
+    htmlFile = reportNameBase + ".html"
 
     #---------------------------------------------------------------------------------------------------
     # Create a simple HTML file to display
@@ -230,7 +223,7 @@ def generate_html_report(reportData):
     html_ptr.write("<!-- BEGIN FOOTER -->\n")
     html_ptr.write("<div class='report-footer'>\n")
     html_ptr.write("  <div style='float:left'>&copy; %s Flexera</div>\n" %fileNameTimeStamp[0:4])
-    html_ptr.write("  <div style='float:right'>Generated on %s</div>\n" %datetime.now().strftime("%B %d, %Y at %H:%M:%S"))
+    html_ptr.write("  <div style='float:right'>Generated on %s</div>\n" %datetime.strptime(fileNameTimeStamp, "%Y%m%d-%H%M%S").strftime("%B %d, %Y at %H:%M:%S"))
     html_ptr.write("<br>\n")
     html_ptr.write("  <div style='float:right'>Report Version: %s</div>\n" %_version.__version__)
     html_ptr.write("</div>\n")
