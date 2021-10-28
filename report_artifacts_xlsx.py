@@ -44,8 +44,12 @@ def generate_xlsx_report(reportData, reportNameBase):
 
         hierachyWorksheet = workbook.add_worksheet('Project Hierarchy')
         hierachyWorksheet.hide_gridlines(2)
-        hierachyWorksheet.write('B2', projectName, hierarchyCellFormat) # Row 2, column 1
-        row=1
+        
+        hierachyWorksheet.write(0, 0, "Report Generated: %s" %datetime.strptime(fileNameTimeStamp, "%Y%m%d-%H%M%S").strftime("%B %d, %Y at %H:%M:%S"))
+        hierachyWorksheet.write(1, 0, "Report Version: %s" %_version.__version__)
+        
+        hierachyWorksheet.write('B4', projectName, hierarchyCellFormat) # Row 3, column 1
+        row=3
         column=1
         display_project_hierarchy(hierachyWorksheet, projectHierarchy, row, column, hierarchyCellFormat)
 
@@ -82,8 +86,10 @@ def generate_xlsx_report(reportData, reportNameBase):
         tableHeaders.append("VULNERABILITIES")
         column+=1
 
-    detailsWorksheet.write(0, column+1, "Report Generated: %s" %datetime.strptime(fileNameTimeStamp, "%Y%m%d-%H%M%S").strftime("%B %d, %Y at %H:%M:%S"))
-    detailsWorksheet.write(1, column+1, "Report Version: %s" %_version.__version__)
+    # If there is no hierarchy add report details 
+    if len(projectList) == 1:
+        detailsWorksheet.write(0, column+1, "Report Generated: %s" %datetime.strptime(fileNameTimeStamp, "%Y%m%d-%H%M%S").strftime("%B %d, %Y at %H:%M:%S"))
+        detailsWorksheet.write(1, column+1, "Report Version: %s" %_version.__version__)
 
     # Write out the column headers
     detailsWorksheet.write_row(row, 0, tableHeaders, tableHeaderFormat)
