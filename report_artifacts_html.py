@@ -175,7 +175,6 @@ def generate_html_report(reportData, reportNameBase):
         logger.debug("        Reporting for inventory item %s" %inventoryID)
         projectName = inventoryData[inventoryID]["projectName"]
         inventoryItemName = inventoryData[inventoryID]["inventoryItemName"]
-        projectLink = inventoryData[inventoryID]["projectLink"]
         componentName = inventoryData[inventoryID]["componentName"]
         componentUrl = inventoryData[inventoryID]["componentUrl"]
         componentVersionName = inventoryData[inventoryID]["componentVersionName"]
@@ -187,7 +186,7 @@ def generate_html_report(reportData, reportNameBase):
 
         html_ptr.write("        <tr> \n")
         if len(projectList) > 1:
-            html_ptr.write("            <td class='text-left'><a href='%s' target='_blank'>%s</a></td>\n" %(projectLink, projectName))
+            html_ptr.write("            <td class='text-left'>%s</td>\n" %(projectName))
 
         #  Is there a valid URL to link to?
         if componentUrl == "N/A":
@@ -195,19 +194,27 @@ def generate_html_report(reportData, reportNameBase):
         else:
             html_ptr.write("            <td class='text-left'><a href='%s' target='_blank'>%s</a></td>\n" %(componentUrl, componentName))
 
-        html_ptr.write("            <td class='text-left'>%s</td>\n" %(componentVersionName))
-        
-        #  Is there a valid URL to link to?
-        if selectedLicenseUrl == "":
-            html_ptr.write("            <td class='text-left'>%s</td>\n" %(selectedLicenseName))
+        # Is it a valid version?
+        if componentVersionName == "N/A":
+            html_ptr.write("            <td class='text-left'>&nbsp</td>\n")
         else:
-            html_ptr.write("            <td class='text-left'><a href='%s' target='_blank'>%s</a></td>\n" %(selectedLicenseUrl, selectedLicenseName))
+            html_ptr.write("            <td class='text-left'>%s</td>\n" %(componentVersionName))
+
+        # Is it a valid license?
+        if selectedLicenseName == "I don't know":
+            html_ptr.write("            <td class='text-left'>&nbsp</td>\n")
+        else:
+            #  Is there a valid URL to link to?
+            if selectedLicenseUrl == "":
+                html_ptr.write("            <td class='text-left'>%s</td>\n" %(selectedLicenseName))
+            else:
+                html_ptr.write("            <td class='text-left'><a href='%s' target='_blank'>%s</a></td>\n" %(selectedLicenseUrl, selectedLicenseName))
 
         html_ptr.write("            </td>\n")
 
         if reportOptions["includeVulnerabilities"]:
             if hasVulnerabilities:
-                html_ptr.write("            <td class='text-left'>True</td>\n")
+                html_ptr.write("            <td class='text-left'>Yes</td>\n")
             else:
                 html_ptr.write("            <td class='text-left'>&nbsp</td>\n")
 

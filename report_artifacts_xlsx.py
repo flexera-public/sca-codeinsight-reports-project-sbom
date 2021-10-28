@@ -97,7 +97,10 @@ def generate_xlsx_report(reportData, reportNameBase):
         projectName = inventoryData[inventoryID]["projectName"]
         inventoryItemName = inventoryData[inventoryID]["inventoryItemName"]
         componentName = inventoryData[inventoryID]["componentName"]
+        componentUrl = inventoryData[inventoryID]["componentUrl"]
         componentVersionName = inventoryData[inventoryID]["componentVersionName"]
+        selectedLicenseName = inventoryData[inventoryID]["selectedLicenseName"]
+        selectedLicenseUrl = inventoryData[inventoryID]["selectedLicenseUrl"]
         selectedLicenseName = inventoryData[inventoryID]["selectedLicenseName"]
         projectLink = inventoryData[inventoryID]["projectLink"]
         hasVulnerabilities = inventoryData[inventoryID]["hasVulnerabilities"]
@@ -108,19 +111,39 @@ def generate_xlsx_report(reportData, reportNameBase):
         column=0
         
         if len(projectList) > 1:
-            detailsWorksheet.write_url(row, column, projectLink, cellLinkFormat, string=projectName)
+            detailsWorksheet.write(row, column, projectName, cellFormat)
             column+=1
         
-        detailsWorksheet.write(row, column, componentName, cellFormat)
+        #  Is there a valid URL to link to?
+        if componentUrl == "N/A":
+            detailsWorksheet.write(row, column, componentName, cellFormat)
+        else:
+            detailsWorksheet.write_url(row, column, componentUrl, cellLinkFormat, string=componentName)
         column+=1
-        detailsWorksheet.write(row, column, componentVersionName, cellFormat)
+        
+
+        # Is it a valid version?
+        if componentVersionName == "N/A":
+            detailsWorksheet.write(row, column, "", cellFormat)
+        else:
+            detailsWorksheet.write(row, column, componentVersionName, cellFormat)
         column+=1
-        detailsWorksheet.write(row, column, selectedLicenseName, cellFormat)
+
+        # Is it a valid license?
+        if selectedLicenseName == "I don't know":
+            detailsWorksheet.write(row, column, "", cellFormat)
+        else:
+             #  Is there a valid URL to link to?
+            if selectedLicenseUrl == "":   
+                detailsWorksheet.write(row, column, selectedLicenseName, cellFormat)
+            else:
+                detailsWorksheet.write_url(row, column, selectedLicenseUrl, cellLinkFormat, string=selectedLicenseName)
+
         column+=1
 
         if reportOptions["includeVulnerabilities"]:
             if hasVulnerabilities:
-                detailsWorksheet.write(row, column, "True", cellFormat)
+                detailsWorksheet.write(row, column, "Yes", cellFormat)
             else:
                 detailsWorksheet.write(row, column, "", cellFormat)
 
