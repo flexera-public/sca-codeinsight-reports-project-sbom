@@ -13,71 +13,9 @@ from datetime import datetime
 import xlsxwriter
 
 import _version
+import report_branding.xlsx.xlsx_formatting
 
 logger = logging.getLogger(__name__)
-
-# Colors for report
-reveneraGray = '#323E48'
-white = '#FFFFFF'
-black = '#000000'
-p1LicenseColor = "#C00000"
-p2LicenseColor = "#FFFF00"
-p3LicenseColor= "#008000"
-NALicenseColor = "#D3D3D3"
-criticalVulnColor = "#400000"
-highVulnColor = "#C00000"
-mediumVulnColor = "#FFA500"
-lowVulnColor = "#FFFF00"
-noneVulnColor = "#D3D3D3"
-approvedColor = "#008000"
-rejectedColor = "#C00000"
-draftColor = "#D3D3D3"
-
-tableHeaderFormatProperties = {}
-tableHeaderFormatProperties["font_size"] = "12"
-tableHeaderFormatProperties["bold"] = True
-tableHeaderFormatProperties["font_color"] = white
-tableHeaderFormatProperties["bg_color"] = reveneraGray
-tableHeaderFormatProperties["text_wrap"] = True
-tableHeaderFormatProperties["valign"] = "vcenter"
-tableHeaderFormatProperties["align"] = "center"
-
-standardCellFormatProperties = {}
-standardCellFormatProperties["font_size"] = "10"
-standardCellFormatProperties["bold"] = False
-standardCellFormatProperties["font_color"] = black
-standardCellFormatProperties["bg_color"] = white
-standardCellFormatProperties["text_wrap"] = True
-standardCellFormatProperties["valign"] = "vcenter"
-standardCellFormatProperties["align"] = "center"
-standardCellFormatProperties["border"] = True
-
-boldCellFormatProperties = {}
-boldCellFormatProperties["font_size"] = "12"
-boldCellFormatProperties["bold"] = True
-boldCellFormatProperties["font_color"] = black
-boldCellFormatProperties["bg_color"] = white
-boldCellFormatProperties["text_wrap"] = True
-boldCellFormatProperties["valign"] = "vcenter"
-boldCellFormatProperties["align"] = "center"
-boldCellFormatProperties["border"] = True
-
-linkCellFormatProperties = {}
-linkCellFormatProperties["font_size"] = "10"
-linkCellFormatProperties["bold"] = False
-linkCellFormatProperties["font_color"] = "blue"
-linkCellFormatProperties["bg_color"] = white
-linkCellFormatProperties["text_wrap"] = True
-linkCellFormatProperties["valign"] = "vcenter"
-linkCellFormatProperties["align"] = "center"
-linkCellFormatProperties["border"] = True
-linkCellFormatProperties["underline"] = True
-
-hierarchyCellFormatProperties = boldCellFormatProperties
-hierarchyCellFormatProperties["align"] = "left"
-hierarchyCellFormatProperties["text_wrap"] = False
-hierarchyCellFormatProperties["border"] = False
-
 
 #------------------------------------------------------------------#
 def generate_xlsx_report(reportData):
@@ -101,10 +39,10 @@ def generate_xlsx_report(reportData):
     # Create the workbook/worksheet for storying the data
     workbook = xlsxwriter.Workbook(xlsxFile)
 
-    tableHeaderFormat = workbook.add_format(tableHeaderFormatProperties)
-    cellFormat = workbook.add_format(standardCellFormatProperties)
-    cellLinkFormat = workbook.add_format(linkCellFormatProperties)
-    hierarchyCellFormat = workbook.add_format(hierarchyCellFormatProperties)
+    cellFormat = workbook.add_format(report_branding.xlsx.xlsx_formatting.standardCellFormatProperties)
+    cellLinkFormat = workbook.add_format(report_branding.xlsx.xlsx_formatting.linkCellFormatProperties)
+    tableHeaderFormat = workbook.add_format(report_branding.xlsx.xlsx_formatting.tableHeaderFormatProperties)
+    hierarchyCellFormat = workbook.add_format(report_branding.xlsx.xlsx_formatting.hierarchyCellFormatProperties)
 
     ###############################################################################################
     # Do we need a hierarchy chart?
