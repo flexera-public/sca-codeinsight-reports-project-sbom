@@ -9,7 +9,6 @@ File : report_artifacts_xlsx.py
 '''
 
 import logging
-from datetime import datetime
 import xlsxwriter
 
 import _version
@@ -22,7 +21,7 @@ def generate_xlsx_report(reportData, reportNameBase):
     logger.info("    Entering generate_xlsx_report")
 
     projectName = reportData["projectName"]
-    fileNameTimeStamp = reportData["fileNameTimeStamp"] 
+    reportTimeStamp =  reportData["reportTimeStamp"] 
     inventoryData = reportData["inventoryData"]
     projectList = reportData["projectList"]
     reportOptions = reportData["reportOptions"]
@@ -45,7 +44,7 @@ def generate_xlsx_report(reportData, reportNameBase):
         hierachyWorksheet = workbook.add_worksheet('Project Hierarchy')
         hierachyWorksheet.hide_gridlines(2)
         
-        hierachyWorksheet.write(0, 0, "Report Generated: %s" %datetime.strptime(fileNameTimeStamp, "%Y%m%d-%H%M%S").strftime("%B %d, %Y at %H:%M:%S"))
+        hierachyWorksheet.write(0, 0, "Report Generated: %s" %reportTimeStamp)
         hierachyWorksheet.write(1, 0, "Report Version: %s" %_version.__version__)
         
         hierachyWorksheet.write('B4', projectName, hierarchyCellFormat) # Row 3, column 1
@@ -88,7 +87,7 @@ def generate_xlsx_report(reportData, reportNameBase):
 
     # If there is no hierarchy add report details 
     if len(projectList) == 1:
-        detailsWorksheet.write(0, column+1, "Report Generated: %s" %datetime.strptime(fileNameTimeStamp, "%Y%m%d-%H%M%S").strftime("%B %d, %Y at %H:%M:%S"))
+        detailsWorksheet.write(0, column+1, "Report Generated: %s" %reportTimeStamp)
         detailsWorksheet.write(1, column+1, "Report Version: %s" %_version.__version__)
 
     # Write out the column headers
