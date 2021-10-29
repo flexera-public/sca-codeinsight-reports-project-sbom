@@ -10,7 +10,6 @@ File : report_artifacts_html.py
 import logging
 import os
 import base64
-from datetime import datetime
 
 import _version
 
@@ -23,7 +22,7 @@ def generate_html_report(reportData, reportNameBase):
 
     reportName = reportData["reportName"]
     projectName = reportData["projectName"]
-    fileNameTimeStamp = reportData["fileNameTimeStamp"] 
+    reportTimeStamp =  reportData["reportTimeStamp"] 
     inventoryData = reportData["inventoryData"]
     projectList = reportData["projectList"]
     reportOptions = reportData["reportOptions"]
@@ -229,7 +228,7 @@ def generate_html_report(reportData, reportNameBase):
     #---------------------------------------------------------------------------------------------------
     html_ptr.write("<!-- BEGIN FOOTER -->\n")
     html_ptr.write("<div class='report-footer'>\n")
-    html_ptr.write("  <div style='float:right'>Generated on %s</div>\n" %datetime.strptime(fileNameTimeStamp, "%Y%m%d-%H%M%S").strftime("%B %d, %Y at %H:%M:%S"))
+    html_ptr.write("  <div style='float:right'>Generated on %s</div>\n" %reportTimeStamp)
     html_ptr.write("<br>\n")
     html_ptr.write("  <div style='float:right'>Report Version: %s</div>\n" %_version.__version__)
     html_ptr.write("</div>\n")

@@ -104,6 +104,8 @@ def main():
         
         reportData["projectNameForFile"] = projectNameForFile
         reportData["fileNameTimeStamp"] = fileNameTimeStamp
+        reportData["reportTimeStamp"] = datetime.strptime(fileNameTimeStamp, "%Y%m%d-%H%M%S").strftime("%B %d, %Y at %H:%M:%S")
+
         
         numProjects = len(reportData["projectList"])
 
