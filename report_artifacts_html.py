@@ -17,11 +17,12 @@ logger = logging.getLogger(__name__)
 
 
 #------------------------------------------------------------------#
-def generate_html_report(reportData, reportNameBase):
+def generate_html_report(reportData):
     logger.info("    Entering generate_html_report")
 
     reportName = reportData["reportName"]
     projectName = reportData["projectName"]
+    reportFileNameBase = reportData["reportFileNameBase"]
     reportTimeStamp =  reportData["reportTimeStamp"] 
     inventoryData = reportData["inventoryData"]
     projectList = reportData["projectList"]
@@ -38,7 +39,7 @@ def generate_html_report(reportData, reportNameBase):
     encodedLogoImage = encodeImage(logoImageFile)
     encodedfaviconImage = encodeImage(iconFile)
 
-    htmlFile = reportNameBase + ".html"
+    htmlFile = reportFileNameBase + ".html"
 
     #---------------------------------------------------------------------------------------------------
     # Create a simple HTML file to display

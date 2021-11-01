@@ -17,17 +17,18 @@ import report_branding.xlsx.xlsx_formatting
 logger = logging.getLogger(__name__)
 
 #------------------------------------------------------------------#
-def generate_xlsx_report(reportData, reportNameBase):
+def generate_xlsx_report(reportData):
     logger.info("    Entering generate_xlsx_report")
 
     projectName = reportData["projectName"]
+    reportFileNameBase = reportData["reportFileNameBase"]
     reportTimeStamp =  reportData["reportTimeStamp"] 
     inventoryData = reportData["inventoryData"]
     projectList = reportData["projectList"]
     reportOptions = reportData["reportOptions"]
     projectHierarchy = reportData["projectHierarchy"]
 
-    xlsxFile = reportNameBase + ".xlsx"
+    xlsxFile = reportFileNameBase + ".xlsx"
 
     # Create the workbook/worksheet for storying the data
     workbook = xlsxwriter.Workbook(xlsxFile)

@@ -93,22 +93,26 @@ def main():
         reportOptions["reportName"] = reportName
         reportOptions["fileNameTimeStamp"] = fileNameTimeStamp
         reportOptions["projectID"] = projectID
-        projectName = "Report_Creation_Error"
-        numProjects = 0  # No project information gathered
+        reportFileNameBase = "Report_Creation_Error"
+
         reports = report_errors.create_error_report(reportOptions)
         print("    *** ERROR  ***  Error found validating report options")
     else:
         reportData = report_data.gather_data_for_report(baseURL, projectID, authToken, reportName, reportOptions)
         print("    Report data has been collected")
+        
         projectName = reportData["projectName"]
         projectNameForFile = re.sub(r"[^a-zA-Z0-9]+", '-', projectName )  # Remove special characters from project name for artifacts
         
-        reportData["projectNameForFile"] = projectNameForFile
+        # Are there child projects involved?  If so have the artifact file names reflect this fact
+        if len(reportData["projectList"])==1:
+            reportFileNameBase = projectNameForFile + "-" + str(projectID) + "-" + reportName.replace(" ", "_") + "-" + fileNameTimeStamp
+        else:
+            reportFileNameBase = projectNameForFile + "-with-children-" + str(projectID) + "-" + reportName.replace(" ", "_") + "-" + fileNameTimeStamp
+
         reportData["fileNameTimeStamp"] = fileNameTimeStamp
         reportData["reportTimeStamp"] = datetime.strptime(fileNameTimeStamp, "%Y%m%d-%H%M%S").strftime("%B %d, %Y at %H:%M:%S")
-
-        
-        numProjects = len(reportData["projectList"])
+        reportData["reportFileNameBase"] = reportFileNameBase
 
         if "errorMsg" in reportOptions.keys():
             reports = report_errors.create_error_report(reportData)
@@ -118,7 +122,7 @@ def main():
             print("    Report artifacts have been created")
 
     print("    Create report archive for upload")
-    uploadZipfile = create_report_zipfile(reports, reportName, projectNameForFile, projectID, numProjects, fileNameTimeStamp)
+    uploadZipfile = create_report_zipfile(reports, reportName, projectID, reportFileNameBase)
     print("    Upload zip file creation completed")
 
 	#########################################################
@@ -181,60 +185,54 @@ def verifyOptions(reportOptions):
     return reportOptions
 
 #---------------------------------------------------------------------#
-def create_report_zipfile(reportOutputs, reportName, projectNameForFile, projectID, numProjects, fileNameTimeStamp):
-	logger.info("Entering create_report_zipfile")
+def create_report_zipfile(reportOutputs, reportName, projectID, reportFileNameBase):
 
+    logger.info("Entering create_report_zipfile")
+    allFormatZipFile = reportFileNameBase + ".zip"
 
-	# create a ZipFile object
-	if numProjects <= 1 :
-		allFormatZipFile = projectNameForFile + "-" + projectID + "-" + reportName.replace(" ", "_") + "-" + fileNameTimeStamp + ".zip"
-	else: 
-		allFormatZipFile = projectNameForFile + "-with-children-"  + projectID + "-" + reportName.replace(" ", "_") + "-" + fileNameTimeStamp + ".zip"
+    # create a ZipFile object
+    allFormatsZip = zipfile.ZipFile(allFormatZipFile, 'w', zipfile.ZIP_DEFLATED)
 
-	# create a ZipFile object
-	allFormatsZip = zipfile.ZipFile(allFormatZipFile, 'w', zipfile.ZIP_DEFLATED)
+    logger.debug("    Create downloadable archive: %s" %allFormatZipFile)
+    print("        Create downloadable archive: %s" %allFormatZipFile)
+    for format in reportOutputs["allFormats"]:
+	    print("            Adding %s to zip" %format)
+	    logger.debug("    Adding %s to zip" %format)
+	    allFormatsZip.write(format)
 
+    allFormatsZip.close()
+    logger.debug(    "Downloadable archive created")
+    print("        Downloadable archive created")
 
-	logger.debug("    Create downloadable archive: %s" %allFormatZipFile)
-	print("        Create downloadable archive: %s" %allFormatZipFile)
-	for format in reportOutputs["allFormats"]:
-		print("            Adding %s to zip" %format)
-		logger.debug("    Adding %s to zip" %format)
-		allFormatsZip.write(format)
+    # Now create a temp zipfile of the zipfile along with the viewable file itself
+    uploadZipflle = allFormatZipFile.replace(".zip", "_upload.zip")
+    print("        Create zip archive containing viewable and downloadable archive for upload: %s" %uploadZipflle)
+    logger.debug("    Create zip archive containing viewable and downloadable archive for upload: %s" %uploadZipflle)
+    zipToUpload = zipfile.ZipFile(uploadZipflle, 'w', zipfile.ZIP_DEFLATED)
+    zipToUpload.write(reportOutputs["viewable"])
+    zipToUpload.write(allFormatZipFile)
+    zipToUpload.close()
+    logger.debug("    Archive zip file for upload has been created")
+    print("        Archive zip file for upload has been created")
 
-	allFormatsZip.close()
-	logger.debug(    "Downloadable archive created")
-	print("        Downloadable archive created")
+    # Clean up the items that were added to the zipfile
+    try:
+        os.remove(allFormatZipFile)
+    except OSError:
+        logger.error("Error removing %s" %allFormatZipFile)
+        print("Error removing %s" %allFormatZipFile)
+        return -1
 
-	# Now create a temp zipfile of the zipfile along with the viewable file itself
-	uploadZipflle = allFormatZipFile.replace(".zip", "_upload.zip")
-	print("        Create zip archive containing viewable and downloadable archive for upload: %s" %uploadZipflle)
-	logger.debug("    Create zip archive containing viewable and downloadable archive for upload: %s" %uploadZipflle)
-	zipToUpload = zipfile.ZipFile(uploadZipflle, 'w', zipfile.ZIP_DEFLATED)
-	zipToUpload.write(reportOutputs["viewable"])
-	zipToUpload.write(allFormatZipFile)
-	zipToUpload.close()
-	logger.debug("    Archive zip file for upload has been created")
-	print("        Archive zip file for upload has been created")
+    for fileName in reportOutputs["allFormats"]:
+        try:
+            os.remove(fileName)
+        except OSError:
+            logger.error("Error removing %s" %fileName)
+            print("Error removing %s" %fileName)
+            return -1    
 
-	# Clean up the items that were added to the zipfile
-	try:
-		os.remove(allFormatZipFile)
-	except OSError:
-		logger.error("Error removing %s" %allFormatZipFile)
-		print("Error removing %s" %allFormatZipFile)
-		return -1
-
-	for fileName in reportOutputs["allFormats"]:
-		try:
-			os.remove(fileName)
-		except OSError:
-			logger.error("Error removing %s" %fileName)
-			print("Error removing %s" %fileName)
-			return -1    
-
-	logger.info("Exiting create_report_zipfile")
-	return uploadZipflle
+    logger.info("Exiting create_report_zipfile")
+    return uploadZipflle
 
 #----------------------------------------------------------------------#    
 if __name__ == "__main__":

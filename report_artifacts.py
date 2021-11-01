@@ -18,23 +18,11 @@ logger = logging.getLogger(__name__)
 def create_report_artifacts(reportData):
     logger.info("Entering create_report_artifacts")
 
-    reportName = reportData["reportName"]
-    projectNameForFile  = reportData["projectNameForFile"] 
-    projectID = reportData["projectID"] 
-    fileNameTimeStamp = reportData["fileNameTimeStamp"] 
-    projectList = reportData["projectList"]
-
-    # Are there child projects involved?  If so have the file name reflect this fact
-    if len(projectList)==1:
-        reportNameBase = projectNameForFile + "-" + str(projectID) + "-" + reportName.replace(" ", "_") + "-" + fileNameTimeStamp
-    else:
-        reportNameBase = projectNameForFile + "-with-children-" + str(projectID) + "-" + reportName.replace(" ", "_") + "-" + fileNameTimeStamp
-
     # Dict to hold the complete list of reports
     reports = {}
 
-    htmlFile = report_artifacts_html.generate_html_report(reportData, reportNameBase)
-    xlsxFile = report_artifacts_xlsx.generate_xlsx_report(reportData, reportNameBase)
+    htmlFile = report_artifacts_html.generate_html_report(reportData)
+    xlsxFile = report_artifacts_xlsx.generate_xlsx_report(reportData)
     reports["viewable"] = htmlFile
     reports["allFormats"] = [htmlFile, xlsxFile]
 
