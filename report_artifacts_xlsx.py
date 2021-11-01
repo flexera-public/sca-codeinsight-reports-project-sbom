@@ -126,23 +126,14 @@ def generate_xlsx_report(reportData, reportNameBase):
             detailsWorksheet.write_url(row, column, componentUrl, cellLinkFormat, string=componentName)
         column+=1
         
-
-        # Is it a valid version?
-        if componentVersionName == "N/A":
-            detailsWorksheet.write(row, column, "", cellFormat)
-        else:
-            detailsWorksheet.write(row, column, componentVersionName, cellFormat)
+        detailsWorksheet.write(row, column, componentVersionName, cellFormat)
         column+=1
 
-        # Is it a valid license?
-        if selectedLicenseName == "I don't know":
-            detailsWorksheet.write(row, column, "", cellFormat)
+            #  Is there a valid URL to link to?
+        if selectedLicenseUrl == "":   
+            detailsWorksheet.write(row, column, selectedLicenseName, cellFormat)
         else:
-             #  Is there a valid URL to link to?
-            if selectedLicenseUrl == "":   
-                detailsWorksheet.write(row, column, selectedLicenseName, cellFormat)
-            else:
-                detailsWorksheet.write_url(row, column, selectedLicenseUrl, cellLinkFormat, string=selectedLicenseName)
+            detailsWorksheet.write_url(row, column, selectedLicenseUrl, cellLinkFormat, string=selectedLicenseName)
 
         column+=1
 

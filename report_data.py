@@ -109,6 +109,10 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
                     else:
                         licenseName = licenseInformation["shortName"]
 
+                    # There is not specific selected licesne just let it be blank
+                    if licenseName == "I don't know":
+                        licenseName = ""
+
                     licenseDetails[selectedLicenseID] = {}
                     licenseDetails[selectedLicenseID]["selectedLicenseName"] = licenseName
                     licenseDetails[selectedLicenseID]["selectedLicenseUrl"] = licenseURL
@@ -117,13 +121,15 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
                     selectedLicenseName = licenseName
                     selectedLicenseUrl = licenseURL
 
-                     
                 else:
                     # Typically a WIP item
                     selectedLicenseName = ""
                     selectedLicenseUrl = ""     
 
-            
+            # If there is no specific version just leave it blank
+            if componentVersionName == "N/A":
+                componentVersionName = ""
+
             componentUrl = inventoryItem["url"]
             inventoryLink = baseURL + "/codeinsight/FNCI#myprojectdetails/?id=" + str(projectID) + "&tab=projectInventory&pinv=" + str(inventoryID)
 

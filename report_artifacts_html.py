@@ -193,21 +193,14 @@ def generate_html_report(reportData, reportNameBase):
         else:
             html_ptr.write("            <td class='text-left'><a href='%s' target='_blank'>%s</a></td>\n" %(componentUrl, componentName))
 
-        # Is it a valid version?
-        if componentVersionName == "N/A":
-            html_ptr.write("            <td class='text-left'>&nbsp</td>\n")
-        else:
-            html_ptr.write("            <td class='text-left'>%s</td>\n" %(componentVersionName))
+        html_ptr.write("            <td class='text-left'>%s</td>\n" %(componentVersionName))
 
-        # Is it a valid license?
-        if selectedLicenseName == "I don't know":
-            html_ptr.write("            <td class='text-left'>&nbsp</td>\n")
+
+        #  Is there a valid URL to link to?
+        if selectedLicenseUrl == "":
+            html_ptr.write("            <td class='text-left'>%s</td>\n" %(selectedLicenseName))
         else:
-            #  Is there a valid URL to link to?
-            if selectedLicenseUrl == "":
-                html_ptr.write("            <td class='text-left'>%s</td>\n" %(selectedLicenseName))
-            else:
-                html_ptr.write("            <td class='text-left'><a href='%s' target='_blank'>%s</a></td>\n" %(selectedLicenseUrl, selectedLicenseName))
+            html_ptr.write("            <td class='text-left'><a href='%s' target='_blank'>%s</a></td>\n" %(selectedLicenseUrl, selectedLicenseName))
 
         html_ptr.write("            </td>\n")
 
