@@ -127,7 +127,7 @@ def main():
             print("    Report artifacts have been created")
 
     print("    Create report archive for upload")
-    uploadZipfile = create_report_zipfile(reports, reportName, projectID, reportFileNameBase)
+    uploadZipfile = create_report_zipfile(reports, reportFileNameBase)
     print("    Upload zip file creation completed")
 
 	#########################################################
@@ -190,7 +190,7 @@ def verifyOptions(reportOptions):
     return reportOptions
 
 #---------------------------------------------------------------------#
-def create_report_zipfile(reportOutputs, reportName, projectID, reportFileNameBase):
+def create_report_zipfile(reportOutputs, reportFileNameBase):
 
     logger.info("Entering create_report_zipfile")
     allFormatZipFile = reportFileNameBase + ".zip"
