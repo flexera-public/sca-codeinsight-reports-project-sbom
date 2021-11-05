@@ -78,7 +78,7 @@ To update this report configuration:
 
 ## Usage
 
-This report is executed directly from within Revenera's Code Insight product. From the project reports tab of each Code Insight project it is possible to *generate* the **Project Inventory Report** via the Custom Report Framework.
+This report is executed directly from within Revenera's Code Insight product. From the project reports tab of each Code Insight project it is possible to *generate* the **SBOM Report** via the Custom Report Framework.
 
 The following report options can be set once the report generation has been initiated:
 
