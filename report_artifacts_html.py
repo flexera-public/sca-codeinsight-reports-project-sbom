@@ -246,7 +246,15 @@ def generate_html_report(reportData):
     html_ptr.write("<script>\n")
     
     # Logic for datatable for inventory details
-    add_inventory_datatable(html_ptr)
+    if len(projectList) > 1:
+        # The project names are included so the inventory row is column 1
+        sortByColumn = 1
+    else:
+        # Inventory items are the first column
+        sortByColumn = 0
+    
+    add_inventory_datatable(html_ptr, sortByColumn)
+
     
 
     if len(projectList) > 1:
@@ -279,13 +287,13 @@ def encodeImage(imageFile):
 
 
 #----------------------------------------------------------------------------------------#
-def add_inventory_datatable(html_ptr):
+def add_inventory_datatable(html_ptr, sortByColumn):
     # Add the js for inventory datatable
     html_ptr.write('''
 
             $(document).ready(function (){
                 var table = $('#inventoryData').DataTable({
-                    "order": [ 1, 'asc' ],
+                    "order": [ ''' +  str(sortByColumn) + ''', 'asc' ],
                     "lengthMenu": [ [25, 50, 100, -1], [25, 50, 100, "All"] ],
                 });
             });
