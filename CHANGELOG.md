@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.7] - 2021-11-16
+### Fixed
+- Fixed support for server_properties.json file
+### Changed
+- Removed urllib logging
+
 ## [1.0.6] - 2021-11-08
 ### Added
 - Add requrements file
