@@ -32,13 +32,14 @@ else:
 
 propertiesFile = "../server_properties.json"  # Created by installer or manually
 propertiesFile = logfileName = os.path.dirname(os.path.realpath(__file__)) + "/" +  propertiesFile
-baseURL = "http://localhost:8888"   # Required if the core.server.properties files is not used
 logfileName = os.path.dirname(os.path.realpath(__file__)) + "/_sbom_report.log"
 
 ###################################################################################
 #  Set up logging handler to allow for different levels of logging to be capture
 logging.basicConfig(format='%(asctime)s,%(msecs)-3d  %(levelname)-8s [%(filename)-25s:%(lineno)-4d]  %(message)s', datefmt='%Y-%m-%d:%H:%M:%S', filename=logfileName, filemode='w',level=logging.DEBUG)
 logger = logging.getLogger(__name__)
+
+logging.getLogger("urllib3").setLevel(logging.WARNING)  # Disable logging for requests module
 
 ####################################################################################
 # Create command line argument options
@@ -55,6 +56,24 @@ def main():
 
     logger.info("Creating %s - %s" %(reportName, _version.__version__))
     print("Creating %s - %s" %(reportName, _version.__version__))
+    print("    Logfile: %s" %(logfileName))
+
+
+    #####################################################################################################
+    #  Code Insight System Information
+    #  Pull the base URL from the same file that the installer is creating
+    if os.path.exists(propertiesFile):
+        try:
+            file_ptr = open(propertiesFile, "r")
+            configData = json.load(file_ptr)
+            baseURL = configData["core.server.url"]
+            file_ptr.close()
+            logger.info("Using baseURL from properties file: %s" %propertiesFile)
+        except:
+            logger.error("Unable to open properties file: %s" %propertiesFile)
+    else:
+        baseURL = "http://localhost:8888"   # Required if the core.server.properties files is not used
+        logger.info("Using baseURL from create_report.py")
 
     # See what if any arguments were provided
     args = parser.parse_args()
@@ -62,18 +81,6 @@ def main():
     reportID = args.reportID
     authToken = args.authToken
     reportOptions = args.reportOptions
-
-    #####################################################################################################
-    #  Code Insight System Information
-    #  Pull the base URL from the same file that the installer is creating
-    try:
-        file_ptr = open(propertiesFile, "r")
-        configData = json.load(file_ptr)
-        baseURL = configData["core.server.url"]
-        file_ptr.close()
-        logger.info("Using baseURL from properties file: %s" %propertiesFile)
-    except:
-        logger.info("Using baseURL, %s,  from create_report.py" %baseURL)
 
     fileNameTimeStamp = datetime.now().strftime("%Y%m%d-%H%M%S")
 
@@ -88,6 +95,7 @@ def main():
     logger.debug("    projectID:  %s" %projectID)	
     logger.debug("    reportID:   %s" %reportID)	
     logger.debug("    baseURL:  %s" %baseURL)	
+    logger.debug("    reportOptions:  %s" %reportOptions)	
 
     if "errorMsg" in reportOptions.keys():
 
