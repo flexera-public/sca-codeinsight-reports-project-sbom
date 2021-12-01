@@ -36,7 +36,7 @@ logfileName = os.path.dirname(os.path.realpath(__file__)) + "/_sbom_report.log"
 
 ###################################################################################
 #  Set up logging handler to allow for different levels of logging to be capture
-logging.basicConfig(format='%(asctime)s,%(msecs)-3d  %(levelname)-8s [%(filename)-25s:%(lineno)-4d]  %(message)s', datefmt='%Y-%m-%d:%H:%M:%S', filename=logfileName, filemode='w',level=logging.DEBUG)
+logging.basicConfig(format='%(asctime)s,%(msecs)-3d  %(levelname)-8s [%(filename)-30s:%(lineno)-4d]  %(message)s', datefmt='%Y-%m-%d:%H:%M:%S', filename=logfileName, filemode='w',level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 logging.getLogger("urllib3").setLevel(logging.WARNING)  # Disable logging for requests module
