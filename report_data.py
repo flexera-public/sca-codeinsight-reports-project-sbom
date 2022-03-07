@@ -78,6 +78,13 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
         projectInventoryCount[projectName] = len(projectInventorySummary)
 
         for inventoryItem in projectInventorySummary:
+
+            inventoryType = inventoryItem["type"]
+            
+            # This is not a component for move to the next item
+            if inventoryType != "Component":
+                continue
+
             currentItem +=1
 
             inventoryID = inventoryItem["id"]
