@@ -63,7 +63,7 @@ if adminAuthToken == "UPDATEME" or baseURL == "UPDATEME":
 
 #####################################################################################################
 #  Report Details
-reportName = "SBOM Report"  # What is the name to be shown within Code Insight?
+reportName = "SBOM Report - HTML/Excel"  # What is the name to be shown within Code Insight?
 enableProjectPickerValue = "false"   # true if a second project can be used within this report
 
 reportOptions = []
