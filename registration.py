@@ -83,7 +83,7 @@ reportOption["name"] = "includeVulnerabilities"
 reportOption["label"] = "Include vulnerability presence? (True/False)"
 reportOption["description"] = "Should the report include the presence of vulnerabilities in a component? <b>(True/False)</b>"
 reportOption["type"] = "string"
-reportOption["defaultValue"] = "True"
+reportOption["defaultValue"] = "False"
 reportOption["required"] = "true"
 reportOption["order"] = "2"
 reportOptions.append(reportOption)
