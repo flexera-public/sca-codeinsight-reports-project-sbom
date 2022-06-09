@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2022-06-09
+### Fixed
+- Report name change
+- Add purl elements
+- Use Application Name and Application Version project attributes for report artifacts
+- Change default setting for including vulnerability details
+
 ## [1.0.12] - 2022-05-23
 ### Fixed
 - Registration updates
