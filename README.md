@@ -16,6 +16,7 @@ This repository utilizes the following via CDN for the creation of the report ar
 |Repository Tag | Minimum Code Insight Release |
 |--|--|
 |1.0.x |2021R3 |
+|1.1.x |2022R1 |
 
 **Repository Cloning**
 
@@ -85,6 +86,12 @@ The following report options can be set once the report generation has been init
 - Including child projects (True/False) - Determine if child project data will be included or not.
 - Include presence of vulnerabilities - (True/False) - Display if the component has any vulnerabilities or not.
 - CVSS Version - (2.0/3.x) - Specify which CVSS version for vulnerability data if included.
+
+The generated reports will utilize the following Project Custom Fields if available
+- Application Name
+- Application Version
+
+The above values will be used in place of the **Project Name** for any project references within the generated artifacts to allow users the ability abstract the project name for the application SBOM report.
 
 The Code Insight Custom Report Framework will provide the following to the custom report when initiated:
 
