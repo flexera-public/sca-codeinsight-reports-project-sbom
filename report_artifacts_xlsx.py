@@ -27,6 +27,7 @@ def generate_xlsx_report(reportData):
     projectList = reportData["projectList"]
     reportOptions = reportData["reportOptions"]
     projectHierarchy = reportData["projectHierarchy"]
+    applicationNametoProjectNameMappings = reportData["applicationNametoProjectNameMappings"]
 
     xlsxFile = reportFileNameBase + ".xlsx"
 
@@ -48,10 +49,10 @@ def generate_xlsx_report(reportData):
         hierachyWorksheet.write(0, 0, "Report Generated: %s" %reportTimeStamp)
         hierachyWorksheet.write(1, 0, "Report Version: %s" %_version.__version__)
         
-        hierachyWorksheet.write('B4', projectName, hierarchyCellFormat) # Row 3, column 1
+        hierachyWorksheet.write('B4', applicationNametoProjectNameMappings[projectName], hierarchyCellFormat) # Row 3, column 1
         row=3
         column=1
-        display_project_hierarchy(hierachyWorksheet, projectHierarchy, row, column, hierarchyCellFormat)
+        display_project_hierarchy(hierachyWorksheet, projectHierarchy, applicationNametoProjectNameMappings, row, column, hierarchyCellFormat)
 
     ############################################################
     # Fill out the SBOM details worksheet
@@ -111,13 +112,15 @@ def generate_xlsx_report(reportData):
         projectLink = inventoryData[inventoryID]["projectLink"]
         hasVulnerabilities = inventoryData[inventoryID]["hasVulnerabilities"]
 
-        logger.debug("            Project Name:  %s --> Inventory Item %s" %(projectName, inventoryItemName))
+        applicationReportName = applicationNametoProjectNameMappings[projectName]
+
+        logger.debug("            Project Name:  %s --> Inventory Item %s" %(applicationReportName, inventoryItemName))
 
         # Now write each row of inventory data
         column=0
         
         if len(projectList) > 1:
-            detailsWorksheet.write(row, column, projectName, cellFormat)
+            detailsWorksheet.write(row, column, applicationReportName, cellFormat)
             column+=1
         
         #  Is there a valid URL to link to?
@@ -156,7 +159,7 @@ def generate_xlsx_report(reportData):
 
 
 #------------------------------------------------------------#
-def display_project_hierarchy(worksheet, parentProject, row, column, boldCellFormat):
+def display_project_hierarchy(worksheet, parentProject,applicationNametoProjectNameMappings, row, column, boldCellFormat):
 
     column +=1 #  We are level down so we need to indent
     row +=1
@@ -170,7 +173,7 @@ def display_project_hierarchy(worksheet, parentProject, row, column, boldCellFor
             projectName = childProject["name"]
             # Add this ID to the list of projects with other child projects
             # and get then do it again
-            worksheet.write( row, column, projectName, boldCellFormat)
+            worksheet.write( row, column, applicationNametoProjectNameMappings[projectName], boldCellFormat)
 
-            row =  display_project_hierarchy(worksheet, childProject, row, column, boldCellFormat)
+            row =  display_project_hierarchy(worksheet, childProject,applicationNametoProjectNameMappings, row, column, boldCellFormat)
     return row

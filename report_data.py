@@ -10,6 +10,7 @@ File : report_data.py
 import logging
 import CodeInsight_RESTAPIs.project.get_child_projects
 import CodeInsight_RESTAPIs.project.get_inventory_summary
+import CodeInsight_RESTAPIs.project.get_project_information
 import CodeInsight_RESTAPIs.license.license_lookup
 
 logger = logging.getLogger(__name__)
@@ -29,6 +30,7 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
     inventoryData = {}  # Create a dictionary containing the inventory data using inventoryID as keys
     projectData = {} # Create a dictionary containing the project level summary data using projectID as keys
     licenseDetails = {} # Dictionary to store license details to avoid multiple lookups for same id
+    applicationNametoProjectNameMappings = {} # Dictionary to allow a project to be mapped to an application name/version
 
     # Get the list of parent/child projects start at the base project
     projectHierarchy = CodeInsight_RESTAPIs.project.get_child_projects.get_child_projects_recursively(baseURL, projectID, authToken)
@@ -57,6 +59,14 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
         projectName = project["projectName"]
         projectLink = project["projectLink"]
 
+        applicationReportName = determine_application_name(baseURL, projectName, projectID, authToken)
+
+        # Add the applicationReportName to the mapping dictionary
+        applicationNametoProjectNameMappings[projectName] = applicationReportName
+        # Add the applicationReportName to the project hierarchy
+        project["applicationReportName"] = applicationReportName
+        
+        
         # Include vulnerability data?
         if includeVulnerabilities:
             if cvssVersion == "3.x":
@@ -168,7 +178,8 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
                 "selectedLicenseUrl" : selectedLicenseUrl,
                 "inventoryLink" : inventoryLink,
                 "projectLink" : projectLink,
-                "hasVulnerabilities" : hasVulnerabilities
+                "hasVulnerabilities" : hasVulnerabilities,
+                "applicationReportName" : applicationNametoProjectNameMappings[projectName]
             }
 
             projectData[projectName]["projectLink"] = projectLink
@@ -183,6 +194,7 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
     reportData["projectList"] =projectList
     reportData["reportOptions"] =reportOptions
     reportData["projectInventoryCount"] = projectInventoryCount
+    reportData["applicationNametoProjectNameMappings"] = applicationNametoProjectNameMappings
 
     return reportData
 
@@ -211,3 +223,44 @@ def create_project_hierarchy(project, parentID, projectList, baseURL):
             create_project_hierarchy(childProject, uniqueProjectID, projectList, baseURL)
 
     return projectList
+
+#----------------------------------------------#
+def determine_application_name(baseURL, projectName, projectID, authToken):
+    logger.debug("Entering determine_application_name.")
+    # Create a application name for the report if the custom fields are populated
+    # Default values
+    applicationName = projectName
+    applicationVersion = ""
+
+    projectInformation = CodeInsight_RESTAPIs.project.get_project_information.get_project_information_summary(baseURL, projectID, authToken)
+
+    # Project level custom fields added in 2022R1
+    if "customFields" in projectInformation:
+        customFields = projectInformation["customFields"]
+
+        # See if the custom project fields were propulated for this project
+        for customField in customFields:
+
+            # Is there the reqired custom field available?
+            if customField["fieldLabel"] == "Application Name":
+                if customField["value"]:
+                    applicationName = customField["value"]
+
+            # Is the custom version field available?
+            if customField["fieldLabel"] == "Application Version":
+                if customField["value"]:
+                    applicationVersion = customField["value"]     
+
+
+    # Join the custom values to create the application name for the report artifacts
+    if applicationName != projectName:
+        if applicationVersion != "":
+            applicationReportName = applicationName + " - " + applicationVersion
+        else:
+            applicationReportName = applicationName
+    else:
+        applicationReportName = projectName
+
+    logger.info("    applicationReportName: %s" %applicationReportName)
+
+    return applicationReportName

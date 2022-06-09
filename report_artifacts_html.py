@@ -28,6 +28,7 @@ def generate_html_report(reportData):
     projectList = reportData["projectList"]
     reportOptions = reportData["reportOptions"]
     projectInventoryCount = reportData["projectInventoryCount"]
+    applicationNametoProjectNameMappings = reportData["applicationNametoProjectNameMappings"]
  
     scriptDirectory = os.path.dirname(os.path.realpath(__file__))
     cssFile =  os.path.join(scriptDirectory, "report_branding/css/revenera_common.css")
@@ -148,7 +149,7 @@ def generate_html_report(reportData):
 
     html_ptr.write("    <thead>\n")
     html_ptr.write("        <tr>\n")
-    html_ptr.write("            <th colspan='9' class='text-center'><h4>Software Bill of Materials - %s</h4></th>\n" %(projectName)) 
+    html_ptr.write("            <th colspan='9' class='text-center'><h4>Software Bill of Materials - %s</h4></th>\n" %(applicationNametoProjectNameMappings[projectName])) 
     html_ptr.write("        </tr>\n") 
     html_ptr.write("        <tr>\n")
     
@@ -181,12 +182,14 @@ def generate_html_report(reportData):
         selectedLicenseName = inventoryData[inventoryID]["selectedLicenseName"]
         selectedLicenseUrl = inventoryData[inventoryID]["selectedLicenseUrl"]
         hasVulnerabilities = inventoryData[inventoryID]["hasVulnerabilities"]
+        
+        applicationReportName = applicationNametoProjectNameMappings[projectName]
 
         logger.debug("            Project Name:  %s   Inventory Name %s" %(projectName, inventoryItemName))
 
         html_ptr.write("        <tr> \n")
         if len(projectList) > 1:
-            html_ptr.write("            <td class='text-left'>%s</td>\n" %(projectName))
+            html_ptr.write("            <td class='text-left'>%s</td>\n" %(applicationReportName))
 
         #  Is there a valid URL to link to?
         if componentUrl == "N/A":
@@ -322,7 +325,7 @@ def generate_project_hierarchy_tree(html_ptr, projectHierarchy, projectInventory
             'a_attr': {
                 'href': '%s'
             }
-        },\n'''  %(projectIdentifier, project["parent"], project["projectName"] + " (" + str(inventoryCount) + " items)" , project["projectLink"]))
+        },\n'''  %(projectIdentifier, project["parent"], project["applicationReportName"] + " (" + str(inventoryCount) + " items)" , project["projectLink"]))
 
     html_ptr.write('''\n]''')
 
