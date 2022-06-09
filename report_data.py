@@ -13,6 +13,8 @@ import CodeInsight_RESTAPIs.project.get_inventory_summary
 import CodeInsight_RESTAPIs.project.get_project_information
 import CodeInsight_RESTAPIs.license.license_lookup
 
+import purl
+
 logger = logging.getLogger(__name__)
 logging.getLogger("urllib3").setLevel(logging.WARNING)  # Disable logging for requests module
 
@@ -109,6 +111,8 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
             selectedLicenseID = inventoryItem["selectedLicenseId"]
             selectedLicenseName = inventoryItem["selectedLicenseSPDXIdentifier"]
 
+            purlString = purl.get_purl_string(inventoryItem, baseURL, authToken)
+
 
             if selectedLicenseID in licenseDetails.keys():
                 selectedLicenseName = licenseDetails[selectedLicenseID]["selectedLicenseName"]
@@ -179,7 +183,8 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
                 "inventoryLink" : inventoryLink,
                 "projectLink" : projectLink,
                 "hasVulnerabilities" : hasVulnerabilities,
-                "applicationReportName" : applicationNametoProjectNameMappings[projectName]
+                "applicationReportName" : applicationNametoProjectNameMappings[projectName],
+                "purlString" : purlString
             }
 
             projectData[projectName]["projectLink"] = projectLink

@@ -156,9 +156,10 @@ def generate_html_report(reportData):
     if len(projectList) > 1: 
         html_ptr.write("            <th style='width: 30%' class='text-center'>PROJECT</th>\n") 
 
-    html_ptr.write("            <th style='width: 30%' class='text-center'>COMPONENT</th>\n")
+    html_ptr.write("            <th style='width: 20%' class='text-center'>COMPONENT</th>\n")
     html_ptr.write("            <th style='width: 15%' class='text-center'>VERSION</th>\n")
-    html_ptr.write("            <th style='width: 25%' class='text-center'>LICENSE</th>\n") 
+    html_ptr.write("            <th style='width: 15%' class='text-center'>LICENSE</th>\n") 
+    html_ptr.write("            <th style='width: 25%' class='text-center'>PURL</th>\n") 
     
     if reportOptions["includeVulnerabilities"]:
         html_ptr.write("            <th style='width: 25%' class='text-center'>VULNERABILITES</th>\n") 
@@ -182,7 +183,8 @@ def generate_html_report(reportData):
         selectedLicenseName = inventoryData[inventoryID]["selectedLicenseName"]
         selectedLicenseUrl = inventoryData[inventoryID]["selectedLicenseUrl"]
         hasVulnerabilities = inventoryData[inventoryID]["hasVulnerabilities"]
-        
+        purlString = inventoryData[inventoryID]["purlString"]
+
         applicationReportName = applicationNametoProjectNameMappings[projectName]
 
         logger.debug("            Project Name:  %s   Inventory Name %s" %(projectName, inventoryItemName))
@@ -207,6 +209,9 @@ def generate_html_report(reportData):
             html_ptr.write("            <td class='text-left'><a href='%s' target='_blank'>%s</a></td>\n" %(selectedLicenseUrl, selectedLicenseName))
 
         html_ptr.write("            </td>\n")
+
+        html_ptr.write("            <td class='text-left'>%s</td>\n" %(purlString))
+
 
         if reportOptions["includeVulnerabilities"]:
             if hasVulnerabilities:

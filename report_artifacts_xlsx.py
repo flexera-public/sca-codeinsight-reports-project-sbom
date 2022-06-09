@@ -82,6 +82,11 @@ def generate_xlsx_report(reportData):
     tableHeaders.append("LICENSE")
     column+=1
     
+    detailsWorksheet.set_column(column, column, 50) 
+    tableHeaders.append("PURL")
+    column+=1
+
+
     if reportOptions["includeVulnerabilities"]:
         detailsWorksheet.set_column(column, column, 25) 
         tableHeaders.append("VULNERABILITIES")
@@ -111,6 +116,7 @@ def generate_xlsx_report(reportData):
         selectedLicenseName = inventoryData[inventoryID]["selectedLicenseName"]
         projectLink = inventoryData[inventoryID]["projectLink"]
         hasVulnerabilities = inventoryData[inventoryID]["hasVulnerabilities"]
+        purlString = inventoryData[inventoryID]["purlString"]
 
         applicationReportName = applicationNametoProjectNameMappings[projectName]
 
@@ -139,6 +145,9 @@ def generate_xlsx_report(reportData):
         else:
             detailsWorksheet.write_url(row, column, selectedLicenseUrl, cellLinkFormat, string=selectedLicenseName)
 
+        column+=1
+
+        detailsWorksheet.write(row, column, purlString, cellFormat)
         column+=1
 
         if reportOptions["includeVulnerabilities"]:
