@@ -32,7 +32,7 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
     inventoryData = {}  # Create a dictionary containing the inventory data using inventoryID as keys
     projectData = {} # Create a dictionary containing the project level summary data using projectID as keys
     licenseDetails = {} # Dictionary to store license details to avoid multiple lookups for same id
-    applicationNametoProjectNameMappings = {} # Dictionary to allow a project to be mapped to an application name/version
+    applicationDetails = {} # Dictionary to allow a project to be mapped to an application name/version
 
     # Get the list of parent/child projects start at the base project
     projectHierarchy = CodeInsight_RESTAPIs.project.get_child_projects.get_child_projects_recursively(baseURL, projectID, authToken)
@@ -61,12 +61,12 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
         projectName = project["projectName"]
         projectLink = project["projectLink"]
 
-        applicationReportName = determine_application_name(baseURL, projectName, projectID, authToken)
-
-        # Add the applicationReportName to the mapping dictionary
-        applicationNametoProjectNameMappings[projectName] = applicationReportName
-        # Add the applicationReportName to the project hierarchy
-        project["applicationReportName"] = applicationReportName
+        applicationDetails[projectName] = determine_application_details(baseURL, projectName, projectID, authToken)
+        applicationNameVersion = applicationDetails[projectName]["applicationNameVersion"]
+        
+        
+        # Add the applicationNameVersion to the project hierarchy
+        project["applicationNameVersion"] = applicationNameVersion
         
         
         # Include vulnerability data?
@@ -183,7 +183,7 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
                 "inventoryLink" : inventoryLink,
                 "projectLink" : projectLink,
                 "hasVulnerabilities" : hasVulnerabilities,
-                "applicationReportName" : applicationNametoProjectNameMappings[projectName],
+                "applicationNameVersion" : applicationNameVersion,
                 "purlString" : purlString
             }
 
@@ -199,7 +199,7 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
     reportData["projectList"] =projectList
     reportData["reportOptions"] =reportOptions
     reportData["projectInventoryCount"] = projectInventoryCount
-    reportData["applicationNametoProjectNameMappings"] = applicationNametoProjectNameMappings
+    reportData["applicationDetails"] = applicationDetails
 
     return reportData
 
@@ -230,12 +230,14 @@ def create_project_hierarchy(project, parentID, projectList, baseURL):
     return projectList
 
 #----------------------------------------------#
-def determine_application_name(baseURL, projectName, projectID, authToken):
-    logger.debug("Entering determine_application_name.")
+def determine_application_details(baseURL, projectName, projectID, authToken):
+    logger.debug("Entering determine_application_details.")
     # Create a application name for the report if the custom fields are populated
     # Default values
     applicationName = projectName
     applicationVersion = ""
+    applicationPublisher = ""
+    applicationDetailsString = ""
 
     projectInformation = CodeInsight_RESTAPIs.project.get_project_information.get_project_information_summary(baseURL, projectID, authToken)
 
@@ -256,16 +258,41 @@ def determine_application_name(baseURL, projectName, projectID, authToken):
                 if customField["value"]:
                     applicationVersion = customField["value"]     
 
+            # Is the custom Publisher field available?
+            if customField["fieldLabel"] == "Application Publisher":
+                if customField["value"]:
+                    applicationPublisher = customField["value"]    
+
+
 
     # Join the custom values to create the application name for the report artifacts
     if applicationName != projectName:
         if applicationVersion != "":
-            applicationReportName = applicationName + " - " + applicationVersion
+            applicationNameVersion = applicationName + " - " + applicationVersion
         else:
-            applicationReportName = applicationName
+            applicationNameVersion = applicationName
     else:
-        applicationReportName = projectName
+        applicationNameVersion = projectName
 
-    logger.info("    applicationReportName: %s" %applicationReportName)
+    if applicationPublisher != "":
+        applicationDetailsString += "Publisher: " + applicationPublisher + " | "
 
-    return applicationReportName
+    # This will either be the project name or the supplied application name
+    applicationDetailsString += "Application: " + applicationName + " | "
+
+    if applicationVersion != "":
+        applicationDetailsString += "Version: " + applicationVersion
+    else:
+        # Rip off the  | from the end of the string if the version was not there
+        applicationDetailsString = applicationDetailsString[:-3]
+
+    applicationDetails = {}
+    applicationDetails["applicationName"] = applicationName
+    applicationDetails["applicationVersion"] = applicationVersion
+    applicationDetails["applicationPublisher"] = applicationPublisher
+    applicationDetails["applicationNameVersion"] = applicationNameVersion
+    applicationDetails["applicationDetailsString"] = applicationDetailsString
+
+    logger.info("    applicationDetails: %s" %applicationDetails)
+
+    return applicationDetails
