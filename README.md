@@ -90,6 +90,7 @@ The following report options can be set once the report generation has been init
 The generated reports will utilize the following Project Custom Fields if available
 - Application Name
 - Application Version
+- Application Publisher
 
 The above values will be used in place of the **Project Name** for any project references within the generated artifacts to allow users the ability abstract the project name for the application SBOM report.
 
