@@ -27,7 +27,11 @@ def generate_xlsx_report(reportData):
     projectList = reportData["projectList"]
     reportOptions = reportData["reportOptions"]
     projectHierarchy = reportData["projectHierarchy"]
-    applicationNametoProjectNameMappings = reportData["applicationNametoProjectNameMappings"]
+    applicationDetails = reportData["applicationDetails"]
+
+    applicationName = applicationDetails[projectName]["applicationName"]
+    applicationVersion = applicationDetails[projectName]["applicationVersion"]
+    applicationPublisher= applicationDetails[projectName]["applicationPublisher"]
 
     xlsxFile = reportFileNameBase + ".xlsx"
 
@@ -45,14 +49,26 @@ def generate_xlsx_report(reportData):
 
         hierachyWorksheet = workbook.add_worksheet('Project Hierarchy')
         hierachyWorksheet.hide_gridlines(2)
-        
-        hierachyWorksheet.write(0, 0, "Report Generated: %s" %reportTimeStamp)
-        hierachyWorksheet.write(1, 0, "Report Version: %s" %_version.__version__)
-        
-        hierachyWorksheet.write('B4', applicationNametoProjectNameMappings[projectName], hierarchyCellFormat) # Row 3, column 1
-        row=3
+
+
+        detailsRow=0
+        hierachyWorksheet.write(detailsRow, 0, "Product:  %s" %applicationName)
+        detailsRow+=1 
+        if applicationVersion != "":
+            hierachyWorksheet.write(detailsRow, 0, "Version:  %s" %applicationVersion)
+            detailsRow+=1 
+        if applicationPublisher != "":
+            hierachyWorksheet.write(detailsRow, 0, "Publisher:  %s" %applicationPublisher)
+            detailsRow+=1 
+        hierachyWorksheet.write(detailsRow, 0, "Report Generated:  %s" %reportTimeStamp)
+        detailsRow+=1 
+        hierachyWorksheet.write(detailsRow, 0, "Report Version:  %s" %_version.__version__)
+
+        detailsRow+=2 
+       
+        hierachyWorksheet.write(detailsRow, 1, applicationDetails[projectName]["applicationName"], hierarchyCellFormat) # Row 3, column 1
         column=1
-        display_project_hierarchy(hierachyWorksheet, projectHierarchy, applicationNametoProjectNameMappings, row, column, hierarchyCellFormat)
+        display_project_hierarchy(hierachyWorksheet, projectHierarchy, applicationDetails, detailsRow, column, hierarchyCellFormat)
 
     ############################################################
     # Fill out the SBOM details worksheet
@@ -94,8 +110,18 @@ def generate_xlsx_report(reportData):
 
     # If there is no hierarchy add report details 
     if len(projectList) == 1:
-        detailsWorksheet.write(0, column+1, "Report Generated: %s" %reportTimeStamp)
-        detailsWorksheet.write(1, column+1, "Report Version: %s" %_version.__version__)
+        detailsRow=0
+        detailsWorksheet.write(detailsRow, column+1, "Product:  %s" %applicationName)
+        detailsRow+=1 
+        if applicationVersion != "":
+            detailsWorksheet.write(detailsRow, column+1, "Version:  %s" %applicationVersion)
+            detailsRow+=1 
+        if applicationPublisher != "":
+            detailsWorksheet.write(detailsRow, column+1, "Publisher:  %s" %applicationPublisher)
+            detailsRow+=1 
+        detailsWorksheet.write(detailsRow, column+1, "Report Generated:  %s" %reportTimeStamp)
+        detailsRow+=1 
+        detailsWorksheet.write(detailsRow, column+1, "Report Version:  %s" %_version.__version__)
 
     # Write out the column headers
     detailsWorksheet.write_row(row, 0, tableHeaders, tableHeaderFormat)
@@ -118,15 +144,15 @@ def generate_xlsx_report(reportData):
         hasVulnerabilities = inventoryData[inventoryID]["hasVulnerabilities"]
         purlString = inventoryData[inventoryID]["purlString"]
 
-        applicationReportName = applicationNametoProjectNameMappings[projectName]
+        applicationNameVersion = applicationDetails[projectName]["applicationNameVersion"]
 
-        logger.debug("            Project Name:  %s --> Inventory Item %s" %(applicationReportName, inventoryItemName))
+        logger.debug("            Project Name:  %s --> Inventory Item %s" %(applicationNameVersion, inventoryItemName))
 
         # Now write each row of inventory data
         column=0
         
         if len(projectList) > 1:
-            detailsWorksheet.write(row, column, applicationReportName, cellFormat)
+            detailsWorksheet.write(row, column, applicationNameVersion, cellFormat)
             column+=1
         
         #  Is there a valid URL to link to?
@@ -168,7 +194,7 @@ def generate_xlsx_report(reportData):
 
 
 #------------------------------------------------------------#
-def display_project_hierarchy(worksheet, parentProject,applicationNametoProjectNameMappings, row, column, boldCellFormat):
+def display_project_hierarchy(worksheet, parentProject, applicationDetails, row, column, boldCellFormat):
 
     column +=1 #  We are level down so we need to indent
     row +=1
@@ -182,7 +208,7 @@ def display_project_hierarchy(worksheet, parentProject,applicationNametoProjectN
             projectName = childProject["name"]
             # Add this ID to the list of projects with other child projects
             # and get then do it again
-            worksheet.write( row, column, applicationNametoProjectNameMappings[projectName], boldCellFormat)
+            worksheet.write( row, column, applicationDetails[projectName]["applicationName"], boldCellFormat)
 
-            row =  display_project_hierarchy(worksheet, childProject,applicationNametoProjectNameMappings, row, column, boldCellFormat)
+            row =  display_project_hierarchy(worksheet, childProject, applicationDetails, row, column, boldCellFormat)
     return row

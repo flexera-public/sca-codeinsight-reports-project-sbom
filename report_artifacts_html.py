@@ -28,7 +28,7 @@ def generate_html_report(reportData):
     projectList = reportData["projectList"]
     reportOptions = reportData["reportOptions"]
     projectInventoryCount = reportData["projectInventoryCount"]
-    applicationNametoProjectNameMappings = reportData["applicationNametoProjectNameMappings"]
+    applicationDetails = reportData["applicationDetails"]
  
     scriptDirectory = os.path.dirname(os.path.realpath(__file__))
     cssFile =  os.path.join(scriptDirectory, "report_branding/css/revenera_common.css")
@@ -128,7 +128,7 @@ def generate_html_report(reportData):
         html_ptr.write("<table id='projectSummary' class='table' style='width:90%'>\n")
         html_ptr.write("    <thead>\n")
         html_ptr.write("        <tr>\n")
-        html_ptr.write("            <th colspan='8' class='text-center'><h4>Project Hierarchy</h4></th>\n") 
+        html_ptr.write("            <th colspan='8' class='text-center'><h4>%s - Project Hierarchy</h4></th>\n" %(applicationDetails[projectName]["applicationName"]) )
         html_ptr.write("        </tr>\n") 
         html_ptr.write("    </thead>\n")
         html_ptr.write("</table>\n")
@@ -143,13 +143,14 @@ def generate_html_report(reportData):
         html_ptr.write("</div>\n")
 
         html_ptr.write("<hr class='small'>")
-
  
     html_ptr.write("<table id='inventoryData' class='table table-hover table-sm row-border' style='width:90%'>\n")
 
     html_ptr.write("    <thead>\n")
     html_ptr.write("        <tr>\n")
-    html_ptr.write("            <th colspan='9' class='text-center'><h4>Software Bill of Materials - %s</h4></th>\n" %(applicationNametoProjectNameMappings[projectName])) 
+    html_ptr.write("            <th colspan='9' class='text-center'><p style='font-size:24px'>Software Bill of Materials</p>\n") 
+    html_ptr.write("            <p style='font-size:16px'>%s</p></th>\n" %(applicationDetails[projectName]["applicationDetailsString"]))
+
     html_ptr.write("        </tr>\n") 
     html_ptr.write("        <tr>\n")
     
@@ -185,13 +186,13 @@ def generate_html_report(reportData):
         hasVulnerabilities = inventoryData[inventoryID]["hasVulnerabilities"]
         purlString = inventoryData[inventoryID]["purlString"]
 
-        applicationReportName = applicationNametoProjectNameMappings[projectName]
+        applicationNameVersion = applicationDetails[projectName]["applicationNameVersion"]
 
         logger.debug("            Project Name:  %s   Inventory Name %s" %(projectName, inventoryItemName))
 
         html_ptr.write("        <tr> \n")
         if len(projectList) > 1:
-            html_ptr.write("            <td class='text-left'>%s</td>\n" %(applicationReportName))
+            html_ptr.write("            <td class='text-left'>%s</td>\n" %(applicationNameVersion))
 
         #  Is there a valid URL to link to?
         if componentUrl == "N/A":
@@ -330,7 +331,7 @@ def generate_project_hierarchy_tree(html_ptr, projectHierarchy, projectInventory
             'a_attr': {
                 'href': '%s'
             }
-        },\n'''  %(projectIdentifier, project["parent"], project["applicationReportName"] + " (" + str(inventoryCount) + " items)" , project["projectLink"]))
+        },\n'''  %(projectIdentifier, project["parent"], project["applicationNameVersion"] + " (" + str(inventoryCount) + " items)" , project["projectLink"]))
 
     html_ptr.write('''\n]''')
 
