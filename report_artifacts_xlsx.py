@@ -128,7 +128,7 @@ def generate_xlsx_report(reportData):
 
     ######################################################
     # Cycle through the inventory to create the table with the SBOM Details
-    for inventoryID in sorted(inventoryData):
+    for inventoryID in inventoryData:
         row+=1
         logger.debug("        Reporting for inventory item %s" %inventoryID)
 

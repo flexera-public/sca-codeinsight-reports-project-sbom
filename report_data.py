@@ -8,6 +8,7 @@ Created On : Wed Oct 06 2021
 File : report_data.py
 '''
 import logging
+from collections import OrderedDict
 
 import CodeInsight_RESTAPIs.project.get_child_projects
 import CodeInsight_RESTAPIs.project.get_inventory_summary
@@ -183,13 +184,16 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
 
             projectData[projectName]["projectLink"] = projectLink
 
+    # Sort the inventory data by Component Name / Component Version / Selected License Name
+    sortedInventoryData = OrderedDict(sorted(inventoryData.items(), key=lambda x: (x[1]['componentName'],  x[1]['componentVersionName'], x[1]['selectedLicenseName'])  ) )
+
     # Build up the data to return for the
     reportData = {}
     reportData["reportName"] = reportName
     reportData["projectHierarchy"] = projectHierarchy
     reportData["projectName"] = projectHierarchy["name"]
     reportData["projectID"] = projectHierarchy["id"]
-    reportData["inventoryData"] = inventoryData
+    reportData["inventoryData"] = sortedInventoryData
     reportData["projectList"] =projectList
     reportData["reportOptions"] =reportOptions
     reportData["projectInventoryCount"] = projectInventoryCount

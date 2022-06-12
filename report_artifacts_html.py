@@ -173,7 +173,7 @@ def generate_html_report(reportData):
     ######################################################
     # Cycle through the inventory to create the 
     # table with the results
-    for inventoryID in sorted(inventoryData):
+    for inventoryID in inventoryData:
 
         logger.debug("        Reporting for inventory item %s" %inventoryID)
         projectName = inventoryData[inventoryID]["projectName"]
