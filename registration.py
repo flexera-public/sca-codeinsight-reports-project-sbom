@@ -88,16 +88,6 @@ reportOption["required"] = "true"
 reportOption["order"] = "2"
 reportOptions.append(reportOption)
 
-reportOption = {}
-reportOption["name"] = "cvssVersion"
-reportOption["label"] = "CVSS Version (2.0/3.x)"
-reportOption["description"] = "What version of CVSS scoring to report on? <b>(2.0/3.x)</b>"
-reportOption["type"] = "string"
-reportOption["defaultValue"] = "3.x"
-reportOption["required"] = "true"
-reportOption["order"] = "3"
-reportOptions.append(reportOption)
-
 
 #####################################################################################################
 # Get the directory name in order to register the script

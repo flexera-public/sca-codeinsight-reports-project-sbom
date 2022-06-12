@@ -8,6 +8,7 @@ Created On : Wed Oct 06 2021
 File : report_data.py
 '''
 import logging
+
 import CodeInsight_RESTAPIs.project.get_child_projects
 import CodeInsight_RESTAPIs.project.get_inventory_summary
 import CodeInsight_RESTAPIs.project.get_project_information
@@ -26,7 +27,6 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
     # Parse report options
     includeChildProjects = reportOptions["includeChildProjects"]  # True/False
     includeVulnerabilities = reportOptions["includeVulnerabilities"]  # True/False
-    cvssVersion = reportOptions["cvssVersion"]  # 2.0/3.x
 
     projectList = [] # List to hold parent/child details for report
     inventoryData = {}  # Create a dictionary containing the inventory data using inventoryID as keys
@@ -71,10 +71,8 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
         
         # Include vulnerability data?
         if includeVulnerabilities:
-            if cvssVersion == "3.x":
-                projectInventorySummary = CodeInsight_RESTAPIs.project.get_inventory_summary.get_project_inventory_with_v3_summary(baseURL, projectID, authToken)
-            else:
-                projectInventorySummary = CodeInsight_RESTAPIs.project.get_inventory_summary.get_project_inventory_with_v2_summary(baseURL, projectID, authToken)
+            # Just default to v3 summary data
+            projectInventorySummary = CodeInsight_RESTAPIs.project.get_inventory_summary.get_project_inventory_with_v3_summary(baseURL, projectID, authToken)
         else:
             projectInventorySummary = CodeInsight_RESTAPIs.project.get_inventory_summary.get_project_inventory_without_vulns_summary(baseURL, projectID, authToken)
 
@@ -106,7 +104,6 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
             logger.debug("    Project:  %s   Inventory Name: %s  Inventory ID: %s" %(projectName, inventoryItemName, inventoryID))
             
             componentName = inventoryItem["componentName"]
-            componentID = inventoryItem["componentId"]
             componentVersionName = inventoryItem["componentVersionName"]
             selectedLicenseID = inventoryItem["selectedLicenseId"]
             selectedLicenseName = inventoryItem["selectedLicenseSPDXIdentifier"]
@@ -156,12 +153,9 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
 
             # Determine if there are any vulnerabilities
             try:
-                if cvssVersion == "3.x":
-                    vulnerabilities = inventoryItem["vulnerabilitySummary"][0]["CvssV3"]
-                else:
-                    vulnerabilities = inventoryItem["vulnerabilitySummary"][0]["CvssV2"]
+                vulnerabilities = inventoryItem["vulnerabilitySummary"][0]["CvssV3"]
                 
-                if vulnerabilities:
+                if sum(vulnerabilities.values()):
                     hasVulnerabilities=True
                 else:
                     hasVulnerabilities=False
