@@ -85,7 +85,6 @@ The following report options can be set once the report generation has been init
 
 - Including child projects (True/False) - Determine if child project data will be included or not.
 - Include presence of vulnerabilities - (True/False) - Display if the component has any vulnerabilities or not.
-- CVSS Version - (2.0/3.x) - Specify which CVSS version for vulnerability data if included.
 
 The generated reports will utilize the following Project Custom Fields if available
 - Application Name
