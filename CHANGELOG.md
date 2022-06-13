@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.1] - 2022-06-12
+### Removed
+- CVSS Version Option - use v3
+### Fixed
+- Vulnerability determination
+### Added
+- Presort inventory data by component name, component version and license name
+
 ## [1.1.0] - 2022-06-09
 ### Fixed
 - Report name change
