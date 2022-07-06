@@ -30,6 +30,13 @@ def get_purl_string(inventoryItem, baseURL, authToken):
     componentName = inventoryItem["componentName"]
     componentVersionName = inventoryItem["componentVersionName"]
 
+    # Ensure there are no spaces in the version name
+    if " " in componentVersionName:
+        logger.debug("    Remove space from version name: %s" %componentVersionName)
+        componentVersionName = componentVersionName.replace(" ", "")
+        logger.debug("    is now: %s" %componentVersionName)
+
+
     inventoryItemName = inventoryItem["name"]
 
     logger.info("    Forge: %s  Inventory Item: %s" %(forge, inventoryItemName))
