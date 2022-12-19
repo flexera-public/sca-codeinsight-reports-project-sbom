@@ -149,6 +149,10 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
             if componentVersionName == "N/A":
                 componentVersionName = ""
 
+            # If there is no license URL set it to blank
+            if selectedLicenseUrl is None:
+                selectedLicenseUrl = ""
+
             componentUrl = inventoryItem["url"]
             inventoryLink = baseURL + "/codeinsight/FNCI#myprojectdetails/?id=" + str(projectID) + "&tab=projectInventory&pinv=" + str(inventoryID)
 
