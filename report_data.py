@@ -109,7 +109,12 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
             selectedLicenseID = inventoryItem["selectedLicenseId"]
             selectedLicenseName = inventoryItem["selectedLicenseSPDXIdentifier"]
 
-            purlString = purl.get_purl_string(inventoryItem, baseURL, authToken)
+            # Attempt to generate a purl string for the component
+            try:
+                purlString = purl.get_purl_string(inventoryItem, baseURL, authToken)
+            except:
+                logger.warning("Unable to create purl string for inventory item %s." %inventoryItemName)
+                purlString = ""
 
 
             if selectedLicenseID in licenseDetails.keys():
