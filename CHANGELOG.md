@@ -6,7 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Fixed
+
+## [1.2.0] - 2023-02-02
+### Fixed
 - Handle failure in purl creation gracefully (custom components will probably be skipped)
+### Changed
+- Update branding/logo
 
 ## [1.1.3] - 2022-09-29
 ### Fixed
