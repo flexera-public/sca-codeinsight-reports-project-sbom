@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.3.2] - 2023-10-16
 ### Changed
 - Update API submodule to prep for tomcat upgrade in 2023R4
+- Updated requirement for common 3.6.8 env
 
 ## [1.3.1] - 2023-06-29
 ### Changed
