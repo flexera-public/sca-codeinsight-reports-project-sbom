@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 def generate_xlsx_report(reportData):
     logger.info("    Entering generate_xlsx_report")
 
-    projectName = reportData["projectName"]
+    projectName = reportData["topLevelProjectName"]
     reportFileNameBase = reportData["reportFileNameBase"]
     reportTimeStamp =  reportData["reportTimeStamp"] 
     inventoryData = reportData["inventoryData"]

@@ -7,26 +7,22 @@ Author : sgeary
 Created On : Wed Oct 06 2021
 File : create_report.py
 '''
-import sys
-import logging
-import argparse
-import os
-import json
+import sys, os, logging, argparse, json, re
 from datetime import datetime
-import zipfile
-import re
 
 import _version
 import report_data
 import report_artifacts
 import report_errors
 import common.api.project.upload_reports
+import common.api.system.release
+import common.report_archive
 
 ###################################################################################
 # Test the version of python to make sure it's at least the version the script
 # was tested on, otherwise there could be unexpected results
-if sys.version_info <= (3, 5):
-    raise Exception("The current version of Python is less than 3.5 which is unsupported.\n Script created/tested against python version 3.8.1. ")
+if sys.version_info < (3, 6):
+    raise Exception("The current version of Python is less than 3.6 which is unsupported.\n Script created/tested against python version 3.6.8. ")
 else:
     pass
 
@@ -53,9 +49,10 @@ parser.add_argument("-reportOpts", "--reportOptions", help="Options for report c
 def main():
 
     reportName = "SBOM Report"
+    reportVersion = _version.__version__
 
-    logger.info("Creating %s - %s" %(reportName, _version.__version__))
-    print("Creating %s - %s" %(reportName, _version.__version__))
+    logger.info("Creating %s - %s" %(reportName, reportVersion))
+    print("Creating %s - %s" %(reportName, reportVersion))
     print("    Logfile: %s" %(logfileName))
 
 
@@ -93,6 +90,7 @@ def main():
     reportOptions = args.reportOptions
 
     fileNameTimeStamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+    reportTimeStamp = datetime.strptime(fileNameTimeStamp, "%Y%m%d-%H%M%S").strftime("%B %d, %Y at %H:%M:%S")
 
     # Based on how the shell pass the arguemnts clean up the options if on a linux system:w
     if sys.platform.startswith('linux'):
@@ -101,39 +99,51 @@ def main():
     reportOptions = json.loads(reportOptions)
     reportOptions = verifyOptions(reportOptions) 
 
+    releaseDetails = common.api.system.release.get_release_details(baseURL, authToken)
+    releaseVersion = releaseDetails["fnci.release.name"].replace(" ", "")
+
+    logger.debug("Code Insight Release: %s" %releaseVersion)
+
     logger.debug("Custom Report Provided Arguments:")	
     logger.debug("    projectID:  %s" %projectID)	
     logger.debug("    reportID:   %s" %reportID)	
     logger.debug("    baseURL:  %s" %baseURL)	
     logger.debug("    reportOptions:  %s" %reportOptions)	
 
+    reportData = {}
+    reportData["projectID"] = projectID
+    reportData["reportName"] = reportName
+    reportData["reportVersion"] = reportVersion
+    reportData["reportOptions"] = reportOptions
+    reportData["releaseVersion"] = releaseVersion
+    reportData["fileNameTimeStamp"] = fileNameTimeStamp
+    reportData["reportTimeStamp"] = reportTimeStamp
+
+    # Did we fail the options validation?
     if "errorMsg" in reportOptions.keys():
 
         reportFileNameBase = reportName.replace(" ", "_") + "-Creation_Error-" + fileNameTimeStamp
-        
-        reportData = {}
+
         reportData["errorMsg"] = reportOptions["errorMsg"]
         reportData["reportName"] = reportName
-        reportData["reportTimeStamp"] = datetime.strptime(fileNameTimeStamp, "%Y%m%d-%H%M%S").strftime("%B %d, %Y at %H:%M:%S")
         reportData["reportFileNameBase"] = reportFileNameBase
         
         reports = report_errors.create_error_report(reportData)
         print("    *** ERROR  ***  Error found validating report options")
     else:
-        reportData = report_data.gather_data_for_report(baseURL, projectID, authToken, reportName, reportOptions)
+        print("    Collect data for %s" %reportName)
+        reportData = report_data.gather_data_for_report(baseURL, projectID, authToken, reportData)
         print("    Report data has been collected")
         
-        projectName = reportData["projectName"]
+        projectName = reportData["topLevelProjectName"]
         projectNameForFile = re.sub(r"[^a-zA-Z0-9]+", '-', projectName )  # Remove special characters from project name for artifacts
         
-        # Are there child projects involved?  If so have the artifact file names reflect this fact
+		# Are there child projects involved?  If so have the artifact file names reflect this fact
         if len(reportData["projectList"])==1:
             reportFileNameBase = projectNameForFile + "-" + str(projectID) + "-" + reportName.replace(" ", "_") + "-" + fileNameTimeStamp
         else:
             reportFileNameBase = projectNameForFile + "-with-children-" + str(projectID) + "-" + reportName.replace(" ", "_") + "-" + fileNameTimeStamp
 
-        reportData["fileNameTimeStamp"] = fileNameTimeStamp
-        reportData["reportTimeStamp"] = datetime.strptime(fileNameTimeStamp, "%Y%m%d-%H%M%S").strftime("%B %d, %Y at %H:%M:%S")
         reportData["reportFileNameBase"] = reportFileNameBase
 
         # Was there any errors while collection the report data?
@@ -145,13 +155,10 @@ def main():
             print("    Report artifacts have been created")
 
     print("    Create report archive for upload")
-    uploadZipfile = create_report_zipfile(reports, reportFileNameBase)
+    uploadZipfile = common.report_archive.create_report_zipfile(reports, reportFileNameBase)
     print("    Upload zip file creation completed")
-
-	#########################################################
-	# Upload the file to Code Insight
     common.api.project.upload_reports.upload_project_report_data(baseURL, projectID, reportID, authToken, uploadZipfile)
-
+    print("    Report uploaded to Code Insight")
 
     #########################################################
     # Remove the file since it has been uploaded to Code Insight
@@ -200,55 +207,6 @@ def verifyOptions(reportOptions):
     
     return reportOptions
 
-#---------------------------------------------------------------------#
-def create_report_zipfile(reportOutputs, reportFileNameBase):
-
-    logger.info("Entering create_report_zipfile")
-    allFormatZipFile = reportFileNameBase + ".zip"
-
-    # create a ZipFile object
-    allFormatsZip = zipfile.ZipFile(allFormatZipFile, 'w', zipfile.ZIP_DEFLATED)
-
-    logger.debug("    Create downloadable archive: %s" %allFormatZipFile)
-    print("        Create downloadable archive: %s" %allFormatZipFile)
-    for format in reportOutputs["allFormats"]:
-        print("            Adding %s to zip" %format)
-        logger.debug("    Adding %s to zip" %format)
-        allFormatsZip.write(format)
-
-    allFormatsZip.close()
-    logger.debug(    "Downloadable archive created")
-    print("        Downloadable archive created")
-
-    # Now create a temp zipfile of the zipfile along with the viewable file itself
-    uploadZipflle = allFormatZipFile.replace(".zip", "_upload.zip")
-    print("        Create zip archive containing viewable and downloadable archive for upload: %s" %uploadZipflle)
-    logger.debug("    Create zip archive containing viewable and downloadable archive for upload: %s" %uploadZipflle)
-    zipToUpload = zipfile.ZipFile(uploadZipflle, 'w', zipfile.ZIP_DEFLATED)
-    zipToUpload.write(reportOutputs["viewable"])
-    zipToUpload.write(allFormatZipFile)
-    zipToUpload.close()
-    logger.debug("    Archive zip file for upload has been created")
-    print("        Archive zip file for upload has been created")
-
-    # Clean up the items that were added to the zipfile
-    try:
-        os.remove(allFormatZipFile)
-    except OSError:
-        logger.error("Error removing %s" %allFormatZipFile)
-        print("Error removing %s" %allFormatZipFile)
-        return -1
-
-    for fileName in reportOutputs["allFormats"]:
-        try:
-            os.remove(fileName)
-        except OSError:
-            logger.error("Error removing %s" %fileName)
-            print("Error removing %s" %fileName)
-            return -1    
-
-    logger.info("Exiting create_report_zipfile")
-    return uploadZipflle
 
 #----------------------------------------------------------------------#    
 if __name__ == "__main__":

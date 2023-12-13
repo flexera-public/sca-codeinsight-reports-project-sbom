@@ -10,7 +10,8 @@ File : report_data.py
 import logging
 from collections import OrderedDict
 
-import common.api.project.get_child_projects
+import common.application_details
+import common.project_heirarchy
 import common.api.project.get_inventory_summary
 import common.api.project.get_project_information
 import common.api.license.license_lookup
@@ -22,10 +23,11 @@ logging.getLogger("urllib3").setLevel(logging.WARNING)  # Disable logging for re
 
 
 #-------------------------------------------------------------------#
-def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOptions):
+def gather_data_for_report(baseURL, projectID, authToken, reportData):
     logger.info("Entering gather_data_for_report")
 
     # Parse report options
+    reportOptions = reportData["reportOptions"]
     includeChildProjects = reportOptions["includeChildProjects"]  # True/False
     includeVulnerabilities = reportOptions["includeVulnerabilities"]  # True/False
 
@@ -35,23 +37,12 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
     licenseDetails = {} # Dictionary to store license details to avoid multiple lookups for same id
     applicationDetails = {} # Dictionary to allow a project to be mapped to an application name/version
 
+    # applicationDetails = common.application_details.determine_application_details(projectID, baseURL, authToken)
+    projectList = common.project_heirarchy.create_project_heirarchy(baseURL, authToken, projectID, includeChildProjects)
+    topLevelProjectName = projectList[0]["projectName"]
+
     # Get the list of parent/child projects start at the base project
     projectHierarchy = common.api.project.get_child_projects.get_child_projects_recursively(baseURL, projectID, authToken)
-
-    # Create a list of project data sorted by the project name at each level for report display  
-    # Add details for the parent node
-    nodeDetails = {}
-    nodeDetails["parent"] = "#"  # The root node
-    nodeDetails["projectName"] = projectHierarchy["name"]
-    nodeDetails["projectID"] = projectHierarchy["id"]
-    nodeDetails["projectLink"] = baseURL + "/codeinsight/FNCI#myprojectdetails/?id=" + str(projectHierarchy["id"]) + "&tab=projectInventory"
-
-    projectList.append(nodeDetails)
-
-    if includeChildProjects:
-        projectList = create_project_hierarchy(projectHierarchy, projectHierarchy["id"], projectList, baseURL)
-    else:
-        logger.debug("Child hierarchy disabled")
 
     projectInventoryCount = {}
 
@@ -64,12 +55,10 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
 
         applicationDetails[projectName] = determine_application_details(baseURL, projectName, projectID, authToken)
         applicationNameVersion = applicationDetails[projectName]["applicationNameVersion"]
-        
-        
+           
         # Add the applicationNameVersion to the project hierarchy
         project["applicationNameVersion"] = applicationNameVersion
-        
-        
+             
         # Include vulnerability data?
         if includeVulnerabilities:
             # Just default to v3 summary data
@@ -109,12 +98,15 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
             selectedLicenseID = inventoryItem["selectedLicenseId"]
             selectedLicenseName = inventoryItem["selectedLicenseSPDXIdentifier"]
 
-            # Attempt to generate a purl string for the component
-            try:
-                purlString = purl.get_purl_string(inventoryItem, baseURL, authToken)
-            except:
-                logger.warning("Unable to create purl string for inventory item %s." %inventoryItemName)
-                purlString = ""
+            if reportData["releaseVersion"] >= "2024R1":
+                purlString = inventoryItem["purl"]
+            else:
+                # Attempt to generate a purl string for the component
+                try:
+                    purlString = purl.get_purl_string(inventoryItem, baseURL, authToken)
+                except:
+                    logger.warning("Unable to create purl string for inventory item %s." %inventoryItemName)
+                    purlString = ""
 
 
             if selectedLicenseID in licenseDetails.keys():
@@ -197,11 +189,8 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
     sortedInventoryData = OrderedDict(sorted(inventoryData.items(), key=lambda x: (x[1]['componentName'],  x[1]['componentVersionName'], x[1]['selectedLicenseName'])  ) )
 
     # Build up the data to return for the
-    reportData = {}
-    reportData["reportName"] = reportName
     reportData["projectHierarchy"] = projectHierarchy
-    reportData["projectName"] = projectHierarchy["name"]
-    reportData["projectID"] = projectHierarchy["id"]
+    reportData["topLevelProjectName"] = topLevelProjectName
     reportData["inventoryData"] = sortedInventoryData
     reportData["projectList"] =projectList
     reportData["reportOptions"] =reportOptions

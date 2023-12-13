@@ -21,7 +21,7 @@ def generate_html_report(reportData):
     logger.info("    Entering generate_html_report")
 
     reportName = reportData["reportName"]
-    projectName = reportData["projectName"]
+    projectName = reportData["topLevelProjectName"]
     reportFileNameBase = reportData["reportFileNameBase"]
     reportTimeStamp =  reportData["reportTimeStamp"] 
     inventoryData = reportData["inventoryData"]
@@ -82,7 +82,7 @@ def generate_html_report(reportData):
     html_ptr.write("        </style>\n")  
 
     html_ptr.write("    	<link rel='icon' type='image/png' href='data:image/png;base64, {}'>\n".format(encodedfaviconImage.decode('utf-8')))
-    html_ptr.write("        <title>%s</title>\n" %(reportName.upper()))
+    html_ptr.write("        <title>%s</title>\n" %(reportName))
     html_ptr.write("    </head>\n") 
 
     html_ptr.write("<body>\n")
