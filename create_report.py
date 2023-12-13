@@ -20,7 +20,7 @@ import _version
 import report_data
 import report_artifacts
 import report_errors
-import CodeInsight_RESTAPIs.project.upload_reports
+import common.api.project.upload_reports
 
 ###################################################################################
 # Test the version of python to make sure it's at least the version the script
@@ -150,7 +150,7 @@ def main():
 
 	#########################################################
 	# Upload the file to Code Insight
-    CodeInsight_RESTAPIs.project.upload_reports.upload_project_report_data(baseURL, projectID, reportID, authToken, uploadZipfile)
+    common.api.project.upload_reports.upload_project_report_data(baseURL, projectID, reportID, authToken, uploadZipfile)
 
 
     #########################################################

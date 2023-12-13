@@ -10,10 +10,10 @@ File : report_data.py
 import logging
 from collections import OrderedDict
 
-import CodeInsight_RESTAPIs.project.get_child_projects
-import CodeInsight_RESTAPIs.project.get_inventory_summary
-import CodeInsight_RESTAPIs.project.get_project_information
-import CodeInsight_RESTAPIs.license.license_lookup
+import common.api.project.get_child_projects
+import common.api.project.get_inventory_summary
+import common.api.project.get_project_information
+import common.api.license.license_lookup
 
 import purl
 
@@ -36,7 +36,7 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
     applicationDetails = {} # Dictionary to allow a project to be mapped to an application name/version
 
     # Get the list of parent/child projects start at the base project
-    projectHierarchy = CodeInsight_RESTAPIs.project.get_child_projects.get_child_projects_recursively(baseURL, projectID, authToken)
+    projectHierarchy = common.api.project.get_child_projects.get_child_projects_recursively(baseURL, projectID, authToken)
 
     # Create a list of project data sorted by the project name at each level for report display  
     # Add details for the parent node
@@ -73,9 +73,9 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
         # Include vulnerability data?
         if includeVulnerabilities:
             # Just default to v3 summary data
-            projectInventorySummary = CodeInsight_RESTAPIs.project.get_inventory_summary.get_project_inventory_with_v3_summary(baseURL, projectID, authToken)
+            projectInventorySummary = common.api.project.get_inventory_summary.get_project_inventory_with_v3_summary(baseURL, projectID, authToken)
         else:
-            projectInventorySummary = CodeInsight_RESTAPIs.project.get_inventory_summary.get_project_inventory_without_vulns_summary(baseURL, projectID, authToken)
+            projectInventorySummary = common.api.project.get_inventory_summary.get_project_inventory_without_vulns_summary(baseURL, projectID, authToken)
 
         
         if not projectInventorySummary:
@@ -123,7 +123,7 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
             else:
                 if selectedLicenseID != "N/A":  
                     logger.debug("        Fetching license details for %s with ID %s" %(selectedLicenseName, selectedLicenseID ))
-                    licenseInformation = CodeInsight_RESTAPIs.license.license_lookup.get_license_details(baseURL, selectedLicenseID, authToken)
+                    licenseInformation = common.api.license.license_lookup.get_license_details(baseURL, selectedLicenseID, authToken)
                     licenseURL = licenseInformation["url"]
                     spdxIdentifier = licenseInformation["spdxIdentifier"]
                     licensePriority = licenseInformation["priority"]
@@ -246,7 +246,7 @@ def determine_application_details(baseURL, projectName, projectID, authToken):
     applicationPublisher = ""
     applicationDetailsString = ""
 
-    projectInformation = CodeInsight_RESTAPIs.project.get_project_information.get_project_information_summary(baseURL, projectID, authToken)
+    projectInformation = common.api.project.get_project_information.get_project_information_summary(baseURL, projectID, authToken)
 
     # Project level custom fields added in 2022R1
     if "customFields" in projectInformation:

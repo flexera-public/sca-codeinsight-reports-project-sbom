@@ -12,7 +12,7 @@ import logging
 import xlsxwriter
 
 import _version
-import report_branding.xlsx.xlsx_formatting
+import common.branding.xlsx.xlsx_formatting
 
 logger = logging.getLogger(__name__)
 
@@ -38,10 +38,10 @@ def generate_xlsx_report(reportData):
     # Create the workbook/worksheet for storying the data
     workbook = xlsxwriter.Workbook(xlsxFile)
 
-    cellFormat = workbook.add_format(report_branding.xlsx.xlsx_formatting.standardCellFormatProperties)
-    cellLinkFormat = workbook.add_format(report_branding.xlsx.xlsx_formatting.linkCellFormatProperties)
-    tableHeaderFormat = workbook.add_format(report_branding.xlsx.xlsx_formatting.tableHeaderFormatProperties)
-    hierarchyCellFormat = workbook.add_format(report_branding.xlsx.xlsx_formatting.hierarchyCellFormatProperties)
+    cellFormat = workbook.add_format(common.branding.xlsx.xlsx_formatting.standardCellFormatProperties)
+    cellLinkFormat = workbook.add_format(common.branding.xlsx.xlsx_formatting.linkCellFormatProperties)
+    tableHeaderFormat = workbook.add_format(common.branding.xlsx.xlsx_formatting.tableHeaderFormatProperties)
+    hierarchyCellFormat = workbook.add_format(common.branding.xlsx.xlsx_formatting.hierarchyCellFormatProperties)
 
     ###############################################################################################
     # Do we need a hierarchy chart?
