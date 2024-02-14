@@ -120,7 +120,7 @@ def gather_data_for_report(baseURL, projectID, authToken, reportData):
                     spdxIdentifier = licenseInformation["spdxIdentifier"]
                     licensePriority = licenseInformation["priority"]
 
-                    if spdxIdentifier != "":
+                    if spdxIdentifier != "" and spdxIdentifier != "N/A":
                         licenseName = spdxIdentifier
                     else:
                         licenseName = licenseInformation["shortName"]
