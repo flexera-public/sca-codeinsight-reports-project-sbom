@@ -183,6 +183,7 @@ def generate_html_report(reportData):
         componentVersionName = inventoryData[inventoryID]["componentVersionName"]
         selectedLicenseName = inventoryData[inventoryID]["selectedLicenseName"]
         selectedLicenseUrl = inventoryData[inventoryID]["selectedLicenseUrl"]
+        licenseExpression = inventoryData[inventoryID].get("licenseExpression", "")
         hasVulnerabilities = inventoryData[inventoryID]["hasVulnerabilities"]
         purlString = inventoryData[inventoryID]["purlString"]
 
@@ -204,7 +205,9 @@ def generate_html_report(reportData):
 
 
         #  Is there a valid URL to link to?
-        if selectedLicenseUrl == "":
+        if licenseExpression:
+            html_ptr.write("            <td class='text-left'>%s</td>\n" %(licenseExpression))
+        elif selectedLicenseUrl == "":
             html_ptr.write("            <td class='text-left'>%s</td>\n" %(selectedLicenseName))
         else:
             html_ptr.write("            <td class='text-left'><a href='%s' target='_blank'>%s</a></td>\n" %(selectedLicenseUrl, selectedLicenseName))
