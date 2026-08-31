@@ -15,6 +15,7 @@ import common.project_heirarchy
 import common.api.project.get_inventory_summary
 import common.api.project.get_project_information
 import common.api.license.license_lookup
+import common.api.inventory.get_inventory_details
 
 import purl
 
@@ -94,9 +95,16 @@ def gather_data_for_report(baseURL, projectID, authToken, reportData):
             logger.debug("    Project:  %s   Inventory Name: %s  Inventory ID: %s" %(projectName, inventoryItemName, inventoryID))
             
             componentName = inventoryItem["componentName"]
+            componentVersionId = inventoryItem.get("componentVersionId", "")
             componentVersionName = inventoryItem["componentVersionName"]
             selectedLicenseID = inventoryItem["selectedLicenseId"]
             selectedLicenseName = inventoryItem["selectedLicenseSPDXIdentifier"]
+            licenseExpression = inventoryItem.get("selectedLicenseExpression", "")
+
+            # "N/A", "-1", "-2", and "69" are all sentinel values Code Insight uses to indicate
+            # no specific (single) license was selected (WIP / Unknown / multi-license item).
+            # Cast to str since inventorySummary may return selectedLicenseId as either type.
+            isSentinelLicenseID = str(selectedLicenseID) in ("N/A", "-1", "-2", "69")
 
             if reportData["releaseVersion"] >= "2024R1":
                 purlString = inventoryItem["purl"]
@@ -113,7 +121,9 @@ def gather_data_for_report(baseURL, projectID, authToken, reportData):
                 selectedLicenseName = licenseDetails[selectedLicenseID]["selectedLicenseName"]
                 selectedLicenseUrl = licenseDetails[selectedLicenseID]["selectedLicenseUrl"]
             else:
-                if selectedLicenseID != "N/A":  
+                # The license/lookup API does not return a usable expression for these sentinel
+                # IDs, so skip the API call entirely.
+                if not isSentinelLicenseID:
                     logger.debug("        Fetching license details for %s with ID %s" %(selectedLicenseName, selectedLicenseID ))
                     licenseInformation = common.api.license.license_lookup.get_license_details(baseURL, selectedLicenseID, authToken)
                     licenseURL = licenseInformation["url"]
@@ -140,7 +150,23 @@ def gather_data_for_report(baseURL, projectID, authToken, reportData):
                 else:
                     # Typically a WIP item
                     selectedLicenseName = ""
-                    selectedLicenseUrl = ""     
+                    selectedLicenseUrl = ""
+
+            # Only hit /inventories/{id} for items whose selected license is one of the
+            # sentinel values (N/A, -1, -2, 69) since these are the only cases where a
+            # multi-license expression may exist. Each inventory item is unique, and a
+            # given component version can map to multiple inventory items with different
+            # license expressions, so the result is fetched per inventory item (no caching).
+            if isSentinelLicenseID:
+                licenseExpression = ""
+                try:
+                    inventoryItemDetails = common.api.inventory.get_inventory_details.get_inventory_item_details_no_vuln_data(inventoryID, baseURL, authToken)
+                    licenseExpressionDetails = inventoryItemDetails.get("licenseExpressionDetails")
+
+                    if licenseExpressionDetails:
+                        licenseExpression = licenseExpressionDetails.get("licenseExpression", "") or ""
+                except Exception as e:
+                    logger.warning("Unable to fetch license expression for inventory item %s: %s" %(inventoryItemName, e))
 
             # If there is no specific version just leave it blank
             if componentVersionName == "N/A":
@@ -180,7 +206,8 @@ def gather_data_for_report(baseURL, projectID, authToken, reportData):
                 "projectLink" : projectLink,
                 "hasVulnerabilities" : hasVulnerabilities,
                 "applicationNameVersion" : applicationNameVersion,
-                "purlString" : purlString
+                "purlString" : purlString,
+                "licenseExpression" : licenseExpression
             }
 
             projectData[projectName]["projectLink"] = projectLink

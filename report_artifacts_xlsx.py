@@ -140,6 +140,7 @@ def generate_xlsx_report(reportData):
         selectedLicenseName = inventoryData[inventoryID]["selectedLicenseName"]
         selectedLicenseUrl = inventoryData[inventoryID]["selectedLicenseUrl"]
         selectedLicenseName = inventoryData[inventoryID]["selectedLicenseName"]
+        licenseExpression = inventoryData[inventoryID].get("licenseExpression", "")
         projectLink = inventoryData[inventoryID]["projectLink"]
         hasVulnerabilities = inventoryData[inventoryID]["hasVulnerabilities"]
         purlString = inventoryData[inventoryID]["purlString"]
@@ -165,8 +166,10 @@ def generate_xlsx_report(reportData):
         detailsWorksheet.write(row, column, componentVersionName, cellFormat)
         column+=1
 
-            #  Is there a valid URL to link to?
-        if selectedLicenseUrl == "":   
+        #  Is there a valid URL to link to?
+        if licenseExpression:
+            detailsWorksheet.write(row, column, licenseExpression, cellFormat)
+        elif selectedLicenseUrl == "":
             detailsWorksheet.write(row, column, selectedLicenseName, cellFormat)
         else:
             detailsWorksheet.write_url(row, column, selectedLicenseUrl, cellLinkFormat, string=selectedLicenseName)
